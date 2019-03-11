@@ -1,0 +1,78 @@
+﻿Year,disease,Daly,population,class,cause
+2016,Malaria,37368766.23,7461883.85,Parasitic and vector diseases,protozoa
+2016,African Trypanosomiasis,203497.08,7461883.85,Parasitic and vector diseases,protozoa
+2016,Chagas disease,252204.42,7461883.85,Parasitic and vector diseases,protozoa
+2016,Schistosomiasis,2543364.23,7461883.85,Parasitic and vector diseases,flatworm
+2016,Leishmaniasis,1068537.31,7461883.85,Parasitic and vector diseases,protozoa
+2016,lymphatic filariasis,1186032.43,7461883.85,Parasitic and vector diseases,filarial worm
+2016,Onchocerciasis,962425.38,7461883.85,Parasitic and vector diseases,nematode
+2016,Cysticercosis,1911540.13,7461883.85,Parasitic and vector diseases,flatworm
+2016,Echinococcosis,686630.15,7461883.85,Parasitic and vector diseases,Echinococcosis
+2016,Dengue,3099919.12,7461883.85,Parasitic and vector diseases,virus
+2016,Trachoma,245009.41,7461883.85,Parasitic and vector diseases,bacteria
+2016,Yellow fever,739346.78,7461883.85,Parasitic and vector diseases,virus
+2016,Rabies,1570558.94,7461883.85,Parasitic and vector diseases,virus
+2016,Tuberculosis,51642598.40,7461883.85,Tuberculosis,bacteria
+2016,Ascariasis,1433407.58,7461883.85,Intestinal nematode infections,nematode
+2016,Trichuriasis,336874.82,7461883.85,Intestinal nematode infections,nematode
+2016,Hookworm disease,1682371.83,7461883.85,Intestinal nematode infections,nematode
+2016,Food-bourne trematodes,1083682.38,7461883.85,Intestinal nematode infections,nematode
+2016,HIV,59951097.69,7461883.85,HIV,virus
+2015,Malaria,38313433.99,7377974.86,Parasitic and vector diseases,protozoa
+2015,African Trypanosomiasis,204321.03,7377974.86,Parasitic and vector diseases,protozoa
+2015,Chagas disease,239241.51,7377974.86,Parasitic and vector diseases,protozoa
+2015,Schistosomiasis,2625932.16,7377974.86,Parasitic and vector diseases,flatworm
+2015,Leishmaniasis,1061712.46,7377974.86,Parasitic and vector diseases,protozoa
+2015,lymphatic filariasis,1241994.96,7377974.86,Parasitic and vector diseases,filarial worm
+2015,Onchocerciasis,990226.84,7377974.86,Parasitic and vector diseases,nematode
+2015,Cysticercosis,1960695.71,7377974.86,Parasitic and vector diseases,flatworm
+2015,Echinococcosis,693367.20,7377974.86,Parasitic and vector diseases,Echinococcosis
+2015,Dengue,2864311.11,7377974.86,Parasitic and vector diseases,virus
+2015,Trachoma,239603.62,7377974.86,Parasitic and vector diseases,bacteria
+2015,Yellow fever,629769.07,7377974.86,Parasitic and vector diseases,virus
+2015,Rabies,1625660.75,7377974.86,Parasitic and vector diseases,virus
+2015,Tuberculosis,53145126.48,7377974.86,Tuberculosis,bacteria
+2015,Ascariasis,1458516.82,7377974.86,Intestinal nematode infections,nematode
+2015,Trichuriasis,339378.58,7377974.86,Intestinal nematode infections,nematode
+2015,Hookworm disease,1676117.33,7377974.86,Intestinal nematode infections,nematode
+2015,Food-bourne trematodes,1088841.63,7377974.86,Intestinal nematode infections,nematode
+2015,HIV,62849934.01,7377974.86,HIV,virus
+2010,Malaria,50148991.00,6953343.83,Parasitic and vector diseases,protozoa
+2010,African Trypanosomiasis,525617.18,6953343.83,Parasitic and vector diseases,protozoa
+2010,Chagas disease,267468.90,6953343.83,Parasitic and vector diseases,protozoa
+2010,Schistosomiasis,3391499.89,6953343.83,Parasitic and vector diseases,flatworm
+2010,Leishmaniasis,1749885.98,6953343.83,Parasitic and vector diseases,protozoa
+2010,lymphatic filariasis,1728488.82,6953343.83,Parasitic and vector diseases,filarial worm
+2010,Onchocerciasis,1131496.65,6953343.83,Parasitic and vector diseases,nematode
+2010,Cysticercosis,2318668.27,6953343.83,Parasitic and vector diseases,flatworm
+2010,Echinococcosis,760209.85,6953343.83,Parasitic and vector diseases,Echinococcosis
+2010,Dengue,2578725.50,6953343.83,Parasitic and vector diseases,virus
+2010,Trachoma,233007.17,6953343.83,Parasitic and vector diseases,bacteria
+2010,Yellow fever,811143.11,6953343.83,Parasitic and vector diseases,virus
+2010,Rabies,2084529.89,6953343.83,Parasitic and vector diseases,virus
+2010,Tuberculosis,57016508.04,6953343.83,Tuberculosis,bacteria
+2010,Ascariasis,1627220.03,6953343.83,Intestinal nematode infections,nematode
+2010,Trichuriasis,370359.26,6953343.83,Intestinal nematode infections,nematode
+2010,Hookworm disease,1747422.88,6953343.83,Intestinal nematode infections,nematode
+2010,Food-bourne trematodes,1101585.77,6953343.83,Intestinal nematode infections,nematode
+2010,HIV,87918265.71,6953343.83,HIV,virus
+2000,Malaria,67855286.74,6140788.81,Parasitic and vector diseases,protozoa
+2000,African Trypanosomiasis,2127360.74,6140788.81,Parasitic and vector diseases,protozoa
+2000,Chagas disease,329019.45,6140788.81,Parasitic and vector diseases,protozoa
+2000,Schistosomiasis,4292377.16,6140788.81,Parasitic and vector diseases,flatworm
+2000,Leishmaniasis,1145865.50,6140788.81,Parasitic and vector diseases,protozoa
+2000,lymphatic filariasis,1937312.21,6140788.81,Parasitic and vector diseases,filarial worm
+2000,Onchocerciasis,1371218.07,6140788.81,Parasitic and vector diseases,nematode
+2000,Cysticercosis,3362443.78,6140788.81,Parasitic and vector diseases,flatworm
+2000,Echinococcosis,1093103.48,6140788.81,Parasitic and vector diseases,Echinococcosis
+2000,Dengue,1143584.43,6140788.81,Parasitic and vector diseases,virus
+2000,Trachoma,262774.11,6140788.81,Parasitic and vector diseases,bacteria
+2000,Yellow fever,1068221.49,6140788.81,Parasitic and vector diseases,virus
+2000,Rabies,3146432.67,6140788.81,Parasitic and vector diseases,virus
+2000,Tuberculosis,70474363.41,6140788.81,Tuberculosis,bacteria
+2000,Ascariasis,2497484.07,6140788.81,Intestinal nematode infections,nematode
+2000,Trichuriasis,464752.54,6140788.81,Intestinal nematode infections,nematode
+2000,Hookworm disease,1771050.19,6140788.81,Intestinal nematode infections,nematode
+2000,Food-bourne trematodes,1165623.36,6140788.81,Intestinal nematode infections,nematode
+2000,HIV,90629387.29,6140788.81,HIV,virus
+,,,,,

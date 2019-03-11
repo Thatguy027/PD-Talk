@@ -1,0 +1,52 @@
+Variable_name,Format,Type,Description,Labelling_of_categories
+id,numeric,Identification,Unique value automatically assigned to a record upon entry into the electronic database,
+publication_title,string,Reference,Title of publication,
+publication_year,numeric,Reference,Year of publication,
+author,string,Reference,Names of authors ,
+endnote_id,string,Identification,Identifier for endnote reference containing a 3-digit country iso-code and an auto-number,
+publication_status,string,Management,Indicates whether publication has complete survey data,incomplete;  complete;  excluded
+permission_needed,string,Management,Is permission necessary to make data available?,false;  true
+permission_obtained,string,Management,Is permission obtained to make data available?,false;  true
+citation,string,Reference,Citation or reference of publication/source data,
+survey_id,numeric,Identification,Unique value automatically assigned to identify a survey documenting in a publication,
+publication_site_name,string,Location,Name of study site,
+site_name,string,Location ,Name of study site,
+country_id,numeric,Identification,Unique identifier (country-level),
+region_id,numeric,Identification,Unique identifier (world regional-level) (See description for region_title),
+country_iso_code,string,Location,2-digit country iso-code,
+region_title,string,Location,Name of world region,Africa;  Central America and the Carribbean;  Central and South Asia;  East and Southeast Asia;  Middle East;  Oceania;  South America
+latitude,numeric,Location,Latitude (in decimal degrees),
+longitude,numeric,Location,Longitude (in decimal degrees),
+precision,numeric,Location,Graded precision of geo-positioning,0 = Not georeferenced; 1 = Highly reliable; 2 = Fairly reliable; 3 = Unreliable; 4 = Highly reliable; and 99 = Higher administrative level (district or above)  
+coordinate_source_title,string,Location,Source for determining location of survey,Wikipedia; Google earth; Author; Others
+urban_rural_title,string,Characteristics,Type of living environment in which survey was conducted,Urban;  Periurban;  Rural;  Unknown
+year_start,numeric,Characteristics,Start year of survey (YYYY),
+year_end,numeric,Characteristics,End year of survey (YYYY),
+month_start,string,Characteristics,Month at which the survey started (MM),
+month_end,numeric,Characteristics,Month at which the survey ended (MM),
+age_start,numeric,Characteristics,Minimum age of study participants (years),
+age_end,numeric,Characteristics,Maximum age of study participants (years),
+number_of_rounds,numeric,Characteristics,Number of rounds,
+location_type_title,string,Characteristics,Type of study site ,School; Community; Other
+study_design_title,string,Characteristics,Type of study design,LQAS;  Mapping survey;  Passive record;  SS/Spot;  TAS
+intervention_status_title,string,Characteristics,Intervention status of study population,Preintervention;  Postintervention;  Unknown
+gender_title,string,Characteristics,Gender groups of focus,Males;  Females;  Both
+time_of_day_title,string,Characteristics,Time at which parasitological data of desired population was collected,
+number_examined,numeric,infection,Number of people and/or parasitological samples examined for STH/SCH/LF,
+number_positive,numeric,infection,Number of people and/or parasitological samples found positive for STH/SCH/LF,
+prevalence,numeric,infection,Prevalence of infection for STH/SCH/LF (0.00-100.00%),
+blood_volume,numeric,infection,Blood volume in urine attributed to S.haematobium infection,
+density,numeric,infection,Parasitic load (microfilaria density by ml) ,
+mfload_method_title,string,infection,"Standard methods used for estimating the microfilarae load in blood - 1. WHO current method:  average number of microfilariae in slides found positive for microfilariae per ml of blood (presuming 60 ?l per slide, multipled by a 16.7 factor, and 10 if used 100 ?l); 2.  WHO old method (arithmetic mean): assuming 20 ?l blood volume. No correction factor applied; 3. Based on counter-chamber which used 100 ?l blood volume, 4. Geometric mean intensity; 5. median microfilarial densities (MfD50) in 20 ?l blood; 6. Other (further explanations to be provided)",
+outcome_notes,string,Characteristics,Useful notes,
+diagnostic_method_id,numeric,Characteristics,Unique identifier for diagnostic title,
+diagnostic_method_title,string,Characteristics,Names of diagnostic technique used in survey,
+worm_type_id,numeric,Infection,Unique identifier assigned to each species of parasitic infection,
+worm_type_title,string,Infection,Names of parasitic infections,Ascaris;  Hookworm;  Trichuris;  STH;  Lymphatic Filariasis;  S.mansoni;  S.haematobium;  S.intercalatum;  S.japonicum;  S.mekongi;  Schisto
+admin0,string,Location,Names of country,
+admin1,string,Location,Names of first-level administrative division,
+admin2,string,Location,Names of secondary administrative division,
+admin3,string,Location,Names of tertiary administrative division,
+admin1id,numeric,Indentification,Unique identifiers for first-level administrative divisions,
+admin2id,numeric,Indentification,Unique identifiers for secondary administrative divisions,
+admin3id,numeric,Indentification,Unique identifiers for tertiary administrative divisions,
