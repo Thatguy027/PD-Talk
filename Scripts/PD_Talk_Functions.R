@@ -1,3 +1,25 @@
+plot_riail_geno <- function(riail_gt) {
+  
+  df$index <- dplyr::group_indices(riail_gt)
+  
+  strain_index <- df$sample
+  names(strain_index) <- df$index + 0.5
+  
+  r_gt <- ggplot(df,  aes(xmin = start, xmax = end, ymin = index, ymax = index + 1, fill = gt)) +
+    geom_rect(aes(alpha = low_sites)) +
+    scale_alpha_discrete(range = c(1.0, 0.65)) +
+    scale_fill_manual(values = strain_colors) +
+    facet_grid(.~chrom, scales="free", space="free") +
+    scale_x_continuous(labels = function(x) { x/1e6 }, expand = c(0,0)) +
+    scale_y_continuous(breaks = unique(df$index) + 0.5, labels = function(x) { strain_index[as.character(x)] }, expand = c(0,0)) + 
+    theme(strip.background = element_blank(),
+          axis.text.y = element_blank(),
+          legend.position = "None")
+  return(r_gt)
+}
+
+
+
 maxlodplot_edit <- function(map){
   
   cidefiner <- function(cis, map) {

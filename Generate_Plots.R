@@ -11,19 +11,32 @@ source("Scripts/Figure_Themes.R")
 # source scripts 
 source("Scripts/PD_Talk_Functions.R")
 
-# ben1
 
-# # # LOAD AND PROCESS INDELS
-ben1_variants <- data.table::fread(glue::glue("{ben1_data}TS9_ben-1_variants.tsv"))%>%
-  na.omit()
 
-gwa_mappings <-  data.table::fread(file = glue::glue("{ben1_data}TS5_GWA_processed_marker_mapping.tsv"))%>%
-  na.omit()%>%
-  dplyr::mutate(snpGT = ifelse(allele==-1,"REF", "ALT"))%>%
-  dplyr::select(snpMarker = marker, strain, trait, value, snpGT)%>%
-  dplyr::filter(trait == "q90.tof")%>%
-  dplyr::left_join(.,ben1_variants, by = "strain")
 
+########################################################################################################################
+# INTRO 
+########################################################################################################################
+
+######################################################################################################################## RIAIL GENOTYPES
+
+df <- readr::read_tsv("Data/gt_hmm_fill.tsv") %>%
+  dplyr::group_by(sample) %>%
+  dplyr::filter(chrom != "MtDNA") %>%
+  dplyr::mutate(gt = ifelse(gt == 1, "N2", "CB4856")) %>%
+  dplyr::mutate(low_sites = ifelse(sites < 100, TRUE, FALSE)) %>%
+  dplyr::filter(grepl("QX", sample)) %>%
+  dplyr::mutate(num_riail = as.numeric(gsub("QX", "",sample))) %>%
+  dplyr::filter(num_riail > 249)
+
+plot_riail_geno(df) +
+  theme(axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill = background_color),
+        panel.background = element_rect(fill = background_color, colour = NA),
+        text = element_text(family = axes_title_font, size = axes_text_size),
+        axis.text = element_text(family = number_font,size = rel(0.8), colour = "grey30", margin = unit(0.1, "cm")))
+
+ggsave(filename = "Plots/RIAIL_Genotypes.png", height = 8, width = 12, dpi = 400)
 
 ########################################################################################################################
 # ARSENIC
@@ -156,3 +169,20 @@ na.omit(arsenic_gwa) %>%
         axis.line = element_line(colour = axis_color))
 
 ggsave(filename = "Plots/Arsenic_PC1_GWA_PxG.png", height = 4, width = 6, dpi = 400)
+
+
+
+########################################################################################################################
+# BEN-1
+########################################################################################################################
+
+# # # LOAD AND PROCESS INDELS
+ben1_variants <- data.table::fread(glue::glue("{ben1_data}TS9_ben-1_variants.tsv"))%>%
+  na.omit()
+
+gwa_mappings <-  data.table::fread(file = glue::glue("{ben1_data}TS5_GWA_processed_marker_mapping.tsv"))%>%
+  na.omit()%>%
+  dplyr::mutate(snpGT = ifelse(allele==-1,"REF", "ALT"))%>%
+  dplyr::select(snpMarker = marker, strain, trait, value, snpGT)%>%
+  dplyr::filter(trait == "q90.tof")%>%
+  dplyr::left_join(.,ben1_variants, by = "strain")

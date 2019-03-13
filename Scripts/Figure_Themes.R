@@ -2,6 +2,7 @@ library(tidyverse)
 library(extrafont)
 library(ggbeeswarm)
 library(linkagemapping)
+library(data.table)
 
 # format settings
 # colors
