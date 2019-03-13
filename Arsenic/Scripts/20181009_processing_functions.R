@@ -663,18 +663,24 @@ run_pca <- function(data, format = "w", drop_method = "t", n_pc = 10){
 }
 
 cegwas2_manplot <- function(plot_df, 
-                         bf_line_color = "gray",
-                         eigen_line_color = "gray",
-                         eigen_cutoff = independent_test_cutoff) {
+                            bf_line_color = "gray",
+                            eigen_line_color = "gray",
+                            eigen_cutoff = independent_test_cutoff) {
   plot_traits <- unique(plot_df$trait)
   plots <- lapply(plot_traits, function(i) {
-    plot_df %>%
+    
+    bf_cut <- -log10(0.05/length(unique(plot_df$marker)))
+    
+    plot_df_pr <- plot_df %>%
       dplyr::filter(trait == i,
                     CHROM != "MtDNA") %>%
       dplyr::distinct(marker, .keep_all = T) %>%
-      dplyr::mutate(EIGEN_CUTOFF = eigen_cutoff) %>%
-      dplyr::mutate(EIGEN_SIG = ifelse(log10p > BF, "1", 
-                                       ifelse(log10p > EIGEN_CUTOFF, "2", "0")) )%>%
+      dplyr::mutate(EIGEN_CUTOFF = eigen_cutoff,
+                    BF = bf_cut) %>%
+      dplyr::mutate(EIGEN_SIG = ifelse(log10p > bf_cut, "1", 
+                                       ifelse(log10p > EIGEN_CUTOFF, "2", "0")) )
+    
+    plot_df_pr  %>%
       ggplot2::ggplot(.) +
       ggplot2::aes(x = POS/1e6, y = log10p) +
       ggplot2::scale_color_manual(values = c("0" = "black", 
@@ -684,10 +690,17 @@ cegwas2_manplot <- function(plot_df,
                                       xmax = endPOS/1e6, 
                                       ymin = 0, 
                                       ymax = Inf, 
+                                      fill = "hotpink3"), 
+                         color = "hotpink",linetype = 2, 
+                         alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())+
+      ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
+                                      xmax = endPOS/1e6, 
+                                      ymin = 0, 
+                                      ymax = Inf, 
                                       fill = "blue"), 
                          color = "blue",fill = "cyan",linetype = 2, 
-                         alpha=.3)+
-      ggplot2::geom_hline(ggplot2::aes(yintercept = BF),
+                         alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG=="1") %>% na.omit())+
+      ggplot2::geom_hline(ggplot2::aes(yintercept = bf_cut),
                           color = bf_line_color, 
                           alpha = .75,  
                           size = 1) +
@@ -715,6 +728,8 @@ cegwas2_manplot <- function(plot_df,
   })
   plots
 }
+
+
 
 
 pxgplot_edit_1peak <- function(cross, map, parent="N2xCB4856") {
@@ -856,18 +871,18 @@ maxlodplot_edit3 <- function(map){
     dplyr::filter(!is.na(var_exp)) %>%
     dplyr::do(head(., n=1))
   
-  map_trait_5 <- map %>%
-    dplyr::group_by(marker)%>%
-    dplyr::filter(trait == traits[5])%>%
-    dplyr::filter(lod == max(lod))
-  
-  cis_trait_5 <- map %>%
-    dplyr::group_by(marker) %>%
-    dplyr::filter(trait == traits[5])%>%
-    dplyr::mutate(maxlod=max(lod))%>%
-    dplyr::group_by(iteration) %>%
-    dplyr::filter(!is.na(var_exp)) %>%
-    dplyr::do(head(., n=1))
+  # map_trait_5 <- map %>%
+  #   dplyr::group_by(marker)%>%
+  #   dplyr::filter(trait == traits[5])%>%
+  #   dplyr::filter(lod == max(lod))
+  # 
+  # cis_trait_5 <- map %>%
+  #   dplyr::group_by(marker) %>%
+  #   dplyr::filter(trait == traits[5])%>%
+  #   dplyr::mutate(maxlod=max(lod))%>%
+  #   dplyr::group_by(iteration) %>%
+  #   dplyr::filter(!is.na(var_exp)) %>%
+  #   dplyr::do(head(., n=1))
   
   
   if(nrow(cis_trait_1) == 0 | nrow(cis_trait_2) == 0) {
@@ -879,9 +894,9 @@ maxlodplot_edit3 <- function(map){
   map_trait_2 <- cidefiner(cis_trait_2, map_trait_2)
   map_trait_3 <- cidefiner(cis_trait_3, map_trait_3)
   map_trait_4 <- cidefiner(cis_trait_4, map_trait_4)
-  map_trait_5 <- cidefiner(cis_trait_5, map_trait_5)
+  # map_trait_5 <- cidefiner(cis_trait_5, map_trait_5)
   
-  map1 <- dplyr::bind_rows(map_trait_1,map_trait_2, map_trait_3,map_trait_4,map_trait_5)
+  map1 <- dplyr::bind_rows(map_trait_1,map_trait_2, map_trait_3,map_trait_4)
   
   plot <- ggplot2::ggplot(map1) +
     ggplot2::aes(x = pos/1e6, y = lod)
@@ -890,23 +905,23 @@ maxlodplot_edit3 <- function(map){
   if(nrow(cis_trait_1) != 0 | nrow(cis_trait_2) != 0 | nrow(cis_trait_3) != 0) {
     plot <- plot + 
       ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
-                           fill = "hotpink3", alpha = 0.5, data = map_trait_1)  +
+                           fill = "hotpink3", alpha = 0.5, data = map_trait_2)  +
       ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
-                           fill = "cadetblue3", alpha = 0.5, data = map_trait_2) +
+                           fill = "cadetblue3", alpha = 0.5, data = map_trait_3) +
       ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
-                           fill = "red", alpha = 0.5, data = map_trait_3)
+                           fill = "red", alpha = 0.5, data = map_trait_1)
       ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
                          fill = "orange", alpha = 0.5, data = map_trait_4)
-      ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
-                           fill = "black", alpha = 0.5, data = map_trait_5)
+      # ggplot2::geom_ribbon(ggplot2::aes(x = pos/1e6, ymin = 0, ymax = ci_lod),
+      #                      fill = "black", alpha = 0.5, data = map_trait_5)
   }
   
   plot <- plot + 
-    ggplot2::geom_line(size = 1, alpha = 0.85, color = "hotpink3",data = map_trait_1) +
-    ggplot2::geom_line(size = 1, alpha = 0.85, color = "cadetblue3",data = map_trait_2) +
-    ggplot2::geom_line(size = 1, alpha = 0.85, color = "red",data = map_trait_3) +
-    ggplot2::geom_line(size = 1, alpha = 0.85, color = "orange",data = map_trait_4) +
-    ggplot2::geom_line(size = 1, alpha = 0.85, color = "black",data = map_trait_5) +
+    ggplot2::geom_line(size = 1, alpha = 0.85, color = "hotpink3",data = map_trait_2) + #size
+    ggplot2::geom_line(size = 1, alpha = 0.85, color = "cadetblue3",data = map_trait_3) +#brood
+    ggplot2::geom_line(size = 1, alpha = 0.85, color = "red",data = map_trait_1) +#ext
+    ggplot2::geom_line(size = 1, alpha = 0.85, color = "orange",data = map_trait_4) +#fluor
+    # ggplot2::geom_line(size = 1, alpha = 0.85, color = "black",data = map_trait_5) +
     ggplot2::facet_grid(.~chr, scales ="free", space = "free") +
     ggplot2::labs(x = "Genomic Position (Mb)", y = "LOD") +
     # ggplot2::scale_colour_manual(values = c("hotpink3","black","cadetblue3", "red"),
