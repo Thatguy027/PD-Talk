@@ -133,7 +133,7 @@ cegwas2_manplot(arsenic_gwa, eigen_cutoff = -log10(0.05/independent_tests))[[1]]
 
 ggsave(filename = "Plots/Arsenic_PC1_GWA.png", height = 4, width = 12, dpi = 400)
 
-######################################################################################################################## PxG
+######################################################################################################################## GWA PxG
 
 peak_pos <- na.omit(arsenic_gwa) %>%
   dplyr::filter(CHROM == "II") %>%
@@ -181,6 +181,20 @@ pxg_df %>%
         axis.line = element_line(colour = axis_color))
 
 ggsave(filename = "Plots/Arsenic_PC1_GWA_PxG.png", height = 6, width = 8, dpi = 400)
+
+######################################################################################################################## GWA PEAK LD
+gm <- readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 5.tsv"))
+arsenic_gwa <- data.table::fread(glue::glue("{arsenic_data}Figure 2-source data 4.tsv"))
+
+LD_output <- Plot_Peak_LD(arsenic_gwa, gm)
+
+LD_output[[1]] + 
+  base_theme + 
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.png", height = 8, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.pdf", height = 8, width = 12, dpi = 400)
 
 ######################################################################################################################## SWAP
 
@@ -497,17 +511,7 @@ boxplot_plt(df = rescue_pheno_pr,
 
 ggsave(filename = "Plots/Arsenic_PC1_Rescue.png", height = 8, width = 14, dpi = 400)
 
-########################################################################################################################
-# BEN-1
-########################################################################################################################
+######################################################################################################################## PopGene
 
-# # # LOAD AND PROCESS INDELS
-ben1_variants <- data.table::fread(glue::glue("{ben1_data}TS9_ben-1_variants.tsv"))%>%
-  na.omit()
 
-gwa_mappings <-  data.table::fread(file = glue::glue("{ben1_data}TS5_GWA_processed_marker_mapping.tsv"))%>%
-  na.omit()%>%
-  dplyr::mutate(snpGT = ifelse(allele==-1,"REF", "ALT"))%>%
-  dplyr::select(snpMarker = marker, strain, trait, value, snpGT)%>%
-  dplyr::filter(trait == "q90.tof")%>%
-  dplyr::left_join(.,ben1_variants, by = "strain")
+
