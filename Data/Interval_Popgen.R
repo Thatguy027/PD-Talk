@@ -33,37 +33,44 @@ ANALYSIS_CHROM <- as.character(args[1])
 CHROM_START <- chr.lengths[which(chroms == as.character(args[1]))][[1]][1]
 CHROM_END <- chr.lengths[which(chroms == as.character(args[1]))][[1]][2]
 
-SLIDE_DISTANCE <- 1000
+SLIDE_DISTANCE <- 100
 WINDOW_SIZE <-  10000
+
+REGION_START <- as.numeric(args[2])
+REGION_END <- as.numeric(args[3])
 
 OUTGROUP <- "XZ1516"
 
 system(glue::glue("echo Done Initializing PopGenome Parameters - WindowSize = {WINDOW_SIZE}, StepSize = {SLIDE_DISTANCE}, Whole Population, Chromosome = {ANALYSIS_CHROM}"))
 
-POPGENOME_VCF <- args[4]
+system(glue::glue("bcftools view -r {ANALYSIS_CHROM}:{args[2]}-{args[3]} -v snps {args[4]} | sed 's/0\\/0/0|0/g' | sed 's/1\\/1/1|1/g' | sed 's/0\\/1/1|1/g' | sed 's/1\\/0/1|1/g' | sed 's/.\\/./.|./g' | bcftools view -Oz -o tempRegion.vcf.gz"))
+system(glue::glue("tabix tempRegion.vcf.gz"))
+system(glue::glue("bcftools query -l tempRegion.vcf.gz > samples.txt"))
+
+samples <- data.table::fread("samples.txt",header = F) %>%
+  dplyr::pull(V1)
+
+POPGENOME_VCF <- "tempRegion.vcf.gz"
 POPGENOME_GFF <- args[5]
 
-system(glue::glue("echo PopGenome - Reading VCF file")) 
+system(glue::glue("echo PopGenome - Reading VCF file {ANALYSIS_CHROM}")) 
 
-GENOME_OBJECT <- PopGenome::readVCF(
-  POPGENOME_VCF, 
+vcf_handle <- vcf_open(POPGENOME_VCF)
+
+GENOME_OBJECT <- Whop_readVCF(
+  vcf_handle, 
   numcols = 100, 
   tid = ANALYSIS_CHROM, 
-  frompos = CHROM_START, 
-  topos = CHROM_END, 
-  approx = F)
+  from = REGION_START,
+  to = REGION_END)
 
 system(glue::glue("echo PopGenome - Setting Outgroup and Defining Window Size"))
 
+GENOME_OBJECT <- PopGenome::set.populations(GENOME_OBJECT, list(samples), diploid = FALSE)
+
 GENOME_OBJECT <- PopGenome::set.outgroup(GENOME_OBJECT, OUTGROUP,  diploid = FALSE)
 
-GENOME_OBJECT <- PopGenome::sliding.window.transform(
-  GENOME_OBJECT, 
-  width = WINDOW_SIZE, 
-  jump = SLIDE_DISTANCE,
-  type = 2, 
-  whole.data = FALSE
-)
+GENOME_OBJECT <- sliding.window.transform(GENOME_OBJECT, WINDOW_SIZE, SLIDE_DISTANCE, type=2)
 
 system(glue::glue("echo PopGenome - Calculating Population Genetic Statistics - Detail Stats"))
 GENOME_OBJECT <- PopGenome::detail.stats(GENOME_OBJECT)
@@ -109,3 +116,7 @@ neutrality_df <- data.frame(Tajima.D = c(GENOME_OBJECT@Tajima.D),
   tidyr::gather(statistic, value, -Population, -WindowPosition)
 
 save(neutrality_df, file = glue::glue("{args[6]}_{args[1]}_{args[2]}-{args[3]}_Diversity_Statistics.Rda"))
+
+system("rm tempRegion.vcf.gz")
+system("rm tempRegion.vcf.gz.tbi")
+system("rm samples.txt")

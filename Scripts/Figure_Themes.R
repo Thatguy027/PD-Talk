@@ -3,6 +3,7 @@ library(extrafont)
 library(ggbeeswarm)
 library(linkagemapping)
 library(data.table)
+library(genetics)
 
 # format settings
 # colors
@@ -11,6 +12,7 @@ highlight_color <- "#D7263D"
 background_color <- "#FCFFFC"
 # strain colors
 strain_colors <- c("N2" = "#F9A227", "CB4856" = "#2790F9", "Other" = "gray50")
+col_blind_colors <- c("#E69F00","#56B4E9","#009E73","#F0E442","#0072B2","#D55E00","#CC79A7","#999999")
 
 # font
 number_font <- "Itim"
