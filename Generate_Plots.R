@@ -12,8 +12,6 @@ source("Scripts/Figure_Themes.R")
 source("Scripts/PD_Talk_Functions.R")
 
 
-
-
 ########################################################################################################################
 # INTRO 
 ########################################################################################################################
@@ -219,7 +217,7 @@ arsenic_swap%>%
 
 ggsave(filename = "Plots/Arsenic_PC1_SWAP.png", height = 6, width = 10, dpi = 400)
 
-######################################################################################################################## Metabolites
+######################################################################################################################## Metabolites ratio in arsenic
 
 
 metabolites <- data.table::fread(glue::glue("{arsenic_data}Supplemental_data26_Processed_Metabolite_Measurements.tsv"))
@@ -289,7 +287,7 @@ complete_arsenic %>%
                     ymax=mean_value+abs(sd_value)),
                 width=.2)+
   facet_wrap(expt~FA, scales = "free")+
-  scale_fill_manual(values=c("orange","gray50","blue","gray50"))+
+  scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
   theme_bw(16)+
   base_theme +  theme(legend.position = "none",
                       panel.grid.major = element_blank(),
@@ -298,6 +296,142 @@ complete_arsenic %>%
   labs(y = "Arsenic - Control")
 
 ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.png", height = 10, width = 10, dpi = 400)
+
+######################################################################################################################## Metabolites straight in arsenic
+controls_new <- L1_fa %>% 
+  tidyr::gather(FA,value,-Strain,-Condition,-Replicate) %>%
+  dplyr::filter(Condition == "Water")%>%
+  dplyr::select(-Condition) %>%
+  dplyr::rename(control_value = value)
+
+arsenic100_new <- L1_fa %>% 
+  tidyr::gather(FA,value,-Strain,-Condition,-Replicate) %>%
+  dplyr::filter(Condition == "Arsenic")%>%
+  dplyr::left_join(.,controls_new, by = c("Strain", "FA", "Replicate")) %>%
+  dplyr::rowwise()%>%
+  dplyr::mutate(delta_control = value - control_value) %>%
+  dplyr::filter(FA %in% c("C17n", "C15n"))%>%
+  dplyr::select(Strain, FA, control_value, delta_control)
+
+rC15 <- metabolites%>%
+  dplyr::filter(compound %in% c("C17n", "C15n"), concentration != "200") %>%
+  dplyr::filter(strain %in% c("590", "CB"))
+
+rC15$concentration <- gsub("Mock", "Water", rC15$concentration)
+rC15$concentration <- gsub("100", "Arsenic", rC15$concentration)
+
+controls <- dplyr::filter(rC15, concentration == "Water")%>%
+  dplyr::group_by(strain, compound, replicate)%>%
+  dplyr::select(-concentration) %>%
+  dplyr::rename(control_value = value)
+
+arsenic100 <- dplyr::filter(rC15, concentration == "Arsenic")%>%
+  dplyr::left_join(.,controls, by = c("strain", "compound","replicate"))%>%
+  dplyr::rowwise()%>%
+  dplyr::mutate(delta_control = value - control_value) %>%
+  dplyr::select(Strain = strain, FA = compound, control_value, delta_control) 
+
+complete_arsenic <- dplyr::bind_rows(arsenic100,arsenic100_new) %>%
+  dplyr::group_by(FA) %>%
+  dplyr::mutate(scale_delta = scale(delta_control)) %>%
+  dplyr::mutate(expt = ifelse(Strain %in% c("N2","ECA581"), "N2 Background", "CB4856 Background")) %>%
+  dplyr::group_by(Strain, FA,expt) %>%
+  dplyr::mutate(mean_scale_value = mean(scale_delta),
+                sd_scale_value = sd(scale_delta),
+                mean_value = mean(delta_control),
+                sd_value = sd(delta_control),
+                tidy_strain = factor(Strain, 
+                                     levels = c("N2","ECA581","CB", "590"), 
+                                     labels = c("N2\nDBT-1(C78)", "N2\nDBT-1(S78)","CB4856\nDBT-1(S78)", "CB4856\nDBT-1(C78)")))
+
+complete_arsenic %>%
+  ggplot()+
+  aes(x = tidy_strain)+
+  geom_bar(aes(y = mean_value, fill = tidy_strain), 
+           color = "black", 
+           stat = "identity", 
+           position = position_dodge())+
+  geom_errorbar(aes(ymin=mean_value-abs(sd_value), ymax=mean_value+abs(sd_value)),
+                width=.2)+
+  facet_wrap(expt~FA, scales = "free")+
+  scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
+  theme_bw(16)+
+  base_theme +  theme(legend.position = "none",
+                      panel.grid.major = element_blank(),
+                      axis.line = element_line(colour = axis_color),
+                      axis.title.x = element_blank()) +
+  theme(strip.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        strip.text.y = element_text(face ="bold"))+
+  labs(y = "Arsenic - Control")
+
+ggsave(filename = "Plots/Arsenic_PC1_StraightChain_Arsenic.png", height = 10, width = 10, dpi = 400)
+
+######################################################################################################################## Metabolites ratios in control
+
+controls_new <- L1_fa %>% 
+  tidyr::gather(FA,value,-Strain,-Condition,-Replicate) %>%
+  dplyr::filter(Condition == "Water")%>%
+  dplyr::select(-Condition) %>%
+  dplyr::rename(control_value = value) %>%
+  dplyr::filter(FA %in% c("15_ratio", "17_ratio"))%>%
+  dplyr::select(Strain, FA, control_value)
+
+controls_new$FA <- gsub("17_ratio", "C17iso/C17n", controls_new$FA)
+controls_new$FA <- gsub("15_ratio", "C15iso/C15n", controls_new$FA)
+
+rC15 <- metabolites%>%
+  dplyr::filter(compound %in% c("rC17", "rC15"), concentration == "Mock") %>%
+  dplyr::filter(strain %in% c("590", "CB"))
+
+rC15$compound <- gsub("rC15", "C15iso/C15n", rC15$compound)
+rC15$compound <- gsub("rC17", "C17iso/C17n", rC15$compound)
+rC15$concentration <- gsub("Mock", "Water", rC15$concentration)
+
+controls <- dplyr::filter(rC15, concentration == "Water")%>%
+  dplyr::group_by(strain, compound, replicate)%>%
+  dplyr::select(-concentration) %>%
+  dplyr::rename(control_value = value)%>%
+  dplyr::ungroup()%>%
+  dplyr::select(Strain = strain, FA = compound, control_value)
+
+
+complete_arsenic <- dplyr::bind_rows(controls,controls_new) %>%
+  dplyr::mutate(expt = ifelse(Strain %in% c("N2","ECA581"), "N2 Background", "CB4856 Background")) %>%
+  dplyr::group_by(Strain, FA,expt) %>%
+  dplyr::mutate(mean_value = mean(control_value),
+                sd_value = sd(control_value),
+                tidy_strain = factor(Strain, 
+                                     levels = c("N2","ECA581","CB", "590"), 
+                                     labels = c("N2\nDBT-1(C78)", "N2\nDBT-1(S78)","CB4856\nDBT-1(S78)", "CB4856\nDBT-1(C78)")))
+
+complete_arsenic %>%
+  ggplot()+
+  aes(x = tidy_strain)+
+  geom_bar(aes(y = mean_value, fill = tidy_strain), 
+           color = "black", 
+           stat = "identity", 
+           position = position_dodge())+
+  geom_errorbar(aes(ymin=mean_value-abs(sd_value), ymax=mean_value+abs(sd_value)),
+                width=.2)+
+  facet_wrap(expt~FA, scales = "free")+
+  scale_fill_manual(values=c("orange","gray50","blue","gray50"))+
+  scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
+  theme_bw(16)+
+  base_theme +  theme(legend.position = "none",
+                      panel.grid.major = element_blank(),
+                      axis.line = element_line(colour = axis_color),
+                      axis.title.x = element_blank()) +
+  theme(strip.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        strip.text.y = element_text(face ="bold"))+
+  labs(y = "Metabolite Levels")
+
+ggsave(filename = "Plots/Arsenic_PC1_ISO_Control.png", height = 10, width = 10, dpi = 400)
 
 ######################################################################################################################## RESCUE
 arsenic_rescue <- data.table::fread(glue::glue("{arsenic_data}Figure 4-source data 5.tsv"))
