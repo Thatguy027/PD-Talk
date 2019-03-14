@@ -521,24 +521,24 @@ dbt_start <- 7942463
 dbt_end <- 7945206
 
 td_df <- neutrality_df %>%
-  dplyr::filter(statistic == "Tajima.D") 
+  dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
+  dplyr::group_by(statistic) %>%
+  dplyr::mutate(scaled_value = scale(value))
 
 td_df %>%
   ggplot()+
-  aes(x = WindowPosition/1e6, y = value)+
-  annotate("rect",xmin=qtl_start/1e6, 
-           xmax=qtl_end/1e6, 
-           ymin=-Inf, 
-           ymax=Inf, 
-           alpha=0.5, 
-           fill="cyan") +
+  aes(x = WindowPosition/1e6, y = value, color = statistic)+
   geom_point(size = point_size, alpha = point_alpha)+
+  scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
+  facet_grid(statistic~., scales = "free")+
   base_theme +
-  theme(legend.position = "none",
-        panel.grid.major = element_blank(),
+  geom_vline(aes(xintercept = qtl_start/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = qtl_end/1e6), color = "#E68FAC")+
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
         axis.line = element_line(colour = axis_color),
-        axis.title.x = element_blank()) +
-  labs(x = "Genomic Position (Mb)", y = "Tajima's D")
+        axis.title.y = element_blank()) +
+  labs(x = "Genomic Position (Mb)")
 
 load("Data/Arsenic_test_interval_II_7598325-8210489_Diversity_Statistics.Rda")
 
@@ -560,7 +560,7 @@ td_df %>%
            alpha=0.5, 
            fill="cyan") +
   geom_point(size = point_size, alpha = point_alpha)+
-  scale_color_manual(values = col_blind_colors)+
+  scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
   facet_grid(statistic~., scales = "free")+
   base_theme +
   theme(panel.grid.major = element_blank(),

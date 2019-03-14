@@ -1,0 +1,7 @@
+awk '$8 == "Yes" && $9 == "Up"  {print $1, $2, $3}' OFS='\t'  CB4856_Outlier_Counts.tsv > CB_Outlier_Bins.bed
+awk 'FNR > 1 {print}' CBGenome_SVs.bed | bedtools sort > CB_SV_Sorted.bed
+bedtools intersect -b CB_SV_Sorted.bed -a CB_Outlier_Bins.bed -wao > Outlier_CV_intersect.bed
+
+
+awk ' {print $1, $2, $3, $4, $8, $9}' OFS='\t'  CB4856_Outlier_Counts.tsv > CB_All_Bins.bed
+bedtools intersect -b CB_SV_Sorted.bed -a CB_ALL_Bins.bed -wao > ALL_CV_intersect.bed
