@@ -142,8 +142,8 @@ pxgplot_edit <- function(cross, map, parent="N2xCB4856") {
   split$genotype <- factor(split$genotype, levels = c("N2","CB4856","LSJ2","AF16","HK104"))
   
   ggplot2::ggplot(split) +
-    ggbeeswarm::geom_beeswarm(ggplot2::aes(x = genotype, y = pheno), alpha = .4,priority = "density",cex = 1.2) +
-    ggplot2::geom_boxplot(ggplot2::aes(x = genotype, y = pheno, fill = genotype), outlier.shape = NA,alpha=0.7) +
+    ggbeeswarm::geom_beeswarm(ggplot2::aes(x = genotype, y = pheno), alpha = point_alpha, priority = "density",cex = 1.2) +
+    ggplot2::geom_boxplot(ggplot2::aes(x = genotype, y = pheno, fill = genotype), outlier.shape = NA,alpha = boxplot_alpha) +
     ggplot2::scale_fill_manual(values = strain_colors) +
     ggplot2::facet_wrap(~ marker, ncol = 5) +
     ggplot2::ggtitle(peaks$trait[1]) +
@@ -209,4 +209,71 @@ cegwas2_manplot <- function(plot_df,
                     title = plot_traits)
   })
   plots
+}
+
+boxplot_plt <- function(df, 
+                        trt, 
+                        cond,
+                        fancy_name, 
+                        strains,
+                        fancy_strains, 
+                        ordered_conditions, 
+                        fancy_ordered_conditions,
+                        r_conc){
+  
+  plot_concentrations <- df%>%
+    dplyr::filter(Trait == trt, 
+                  Condition %in% cond, 
+                  grepl("C15", Condition))
+  
+  plot_concentrations <- unique(plot_concentrations$conc)
+  
+  df%>%
+    dplyr::filter(Trait == trt, 
+                  Condition %in% cond, 
+                  conc %in% plot_concentrations)%>%
+    dplyr::mutate(strain1 = factor(Strain, 
+                                   levels = strains,
+                                   labels = fancy_strains),
+                  condition1 = factor(Condition, 
+                                      levels = ordered_conditions,
+                                      labels = fancy_ordered_conditions))%>%
+    dplyr::mutate(strain_cond = paste(Strain, Condition, sep = "\n"))%>%
+    dplyr::mutate(strain_cond_reorder = factor(strain_cond, 
+                                               levels = c(paste0("N2\nC15ISO",r_conc),
+                                                          "N2\nArsenic",
+                                                          paste0("N2\nArsenicC15ISO",r_conc),
+                                                          paste0("ECA581\nC15ISO",r_conc),
+                                                          "ECA581\nArsenic",
+                                                          paste0("ECA581\nArsenicC15ISO",r_conc),
+                                                          paste0("CB4856\nC15ISO",r_conc),
+                                                          "CB4856\nArsenic",
+                                                          paste0("CB4856\nArsenicC15ISO",r_conc),
+                                                          paste0("ECA590\nC15ISO",r_conc),
+                                                          "ECA590\nArsenic",
+                                                          paste0("ECA590\nArsenicC15ISO",r_conc)),
+                                               labels = c(paste("N2\nC15ISO"),
+                                                          "N2\nArsenic",
+                                                          paste0("N2\nArsenic\nC15ISO"),
+                                                          paste0("N2\nDBT-1(C78S)\nC15ISO"),
+                                                          "N2\nDBT-1(C78S)\nArsenic",
+                                                          paste0("N2\nDBT-1(C78S)\nArsenic\nC15ISO"),
+                                                          paste0("CB4856\nC15ISO"),
+                                                          "CB4856\nArsenic",
+                                                          paste0("CB4856\nArsenic\nC15ISO"),
+                                                          paste0("CB4856\nDBT-1(S78C)\nC15ISO"),
+                                                          "CB4856\nDBT-1(S78C)\nArsenic",
+                                                          paste0("CB4856\nDBT-1(S78C)\nArsenic\nC15ISO"))))%>%
+    ggplot(.) +
+    aes(x = factor(strain_cond_reorder), 
+        y = Value,
+        fill = strain1) +
+    geom_beeswarm(priority = "density", cex = 0.6, size = point_size, alpha = point_alpha) +
+    geom_boxplot(outlier.colour = NA, alpha = boxplot_alpha)+
+    scale_fill_manual(values = c("Bristol" = "#F9A227","Hawaii" = "#2790F9",
+                                 "Bristol\n(C78S)" = "gray","Bristol\n(C78S)" = "gray",
+                                 "Hawaii\n(S78C)" = "gray","Hawaii\n(S78C)" = "gray"),
+                      name="Strain")+
+    labs( y = trt)+
+    labs(y = fancy_name)
 }

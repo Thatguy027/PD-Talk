@@ -19,6 +19,12 @@ axes_title_font <- "Montserrat ExtraBold"
 axes_title_size <- 20
 title_size <- 20
 
+# plot features
+boxplot_alpha <- 0.7
+point_alpha <- 0.4
+point_size <- 2
+point_highlight_size <- 4
+
 # import fonts
 #font_import()
 
