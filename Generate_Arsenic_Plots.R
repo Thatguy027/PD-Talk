@@ -196,6 +196,51 @@ LD_output[[1]] +
 ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.png", height = 8, width = 12, dpi = 400)
 ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.pdf", height = 8, width = 12, dpi = 400)
 
+######################################################################################################################## GWA Fine mapping
+arsenic_fine_mapping <-  readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 8.zip")) 
+
+snpeff_fine <- arsenic_fine_mapping %>%
+  dplyr::filter(CHROM == "II") %>%
+  dplyr::select(MARKER, POS, STRAIN, REF,ALT, TGT = STRAIN_GENOTYPE, VARIANT_IMPACT,
+                VARIANT_LD_WITH_PEAK_MARKER, PEAK_MARKER, QTL_INTERVAL_START,
+                QTL_INTERVAL_END, VARIANT_LOG10p)
+
+snpeff_fine$VARIANT_IMPACT[is.na(snpeff_fine$VARIANT_IMPACT)] <- "INTERGENIC"
+
+LD_genotypes <- snpeff_fine %>%
+  dplyr::filter(STRAIN == "CB4856") %>%
+  dplyr::mutate(cb_alt = ifelse(REF == TGT, "CB4856 REF", "CB4856 ALT")) %>%
+  dplyr::mutate(tidy_marker = gsub("_",":",MARKER))
+
+peak_roi_marker <- LD_genotypes %>%
+  dplyr::filter(tidy_marker == PEAK_MARKER)
+
+LD_genotypes%>%
+  na.omit() %>%
+  ggplot() +
+  aes(x = POS/1e6) +
+  geom_vline(aes(xintercept = 7931252/1e6), 
+             color = "red",
+             linetype = 2) +
+  geom_vline(aes(xintercept = 7.83), color = "gray60")+
+  geom_vline(aes(xintercept = 8.02), color = "gray60")+
+  geom_point(aes(fill = factor(VARIANT_IMPACT,
+                               levels = rev(c("INTERGENIC", "MODIFIER", "LOW", "MODERATE", "HIGH"))), 
+                 y = VARIANT_LOG10p), 
+             size = point_size,
+             shape = 21)+
+  facet_grid(.~cb_alt) + 
+  scale_fill_viridis_d(name = "Variant\nImpact", direction = -1) +
+  theme_bw(15)+
+  base_theme + 
+  labs(x = "Genomic Position (Mb)",
+       y = expression(-log[10](italic(p))))+
+  theme(panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color))
+
+ggsave(filename = "Plots/Arsenic_PC1_GWA_FineMap.png", height = 6, width = 16, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_GWA_FineMap.pdf", height = 6, width = 16, dpi = 400)
+
 ######################################################################################################################## SWAP
 
 
