@@ -380,14 +380,93 @@ dact_swap%>%
 ggsave(filename = "Plots/Dactionmycin_Brood_SWAP.png", height = 6, width = 10, dpi = 400)
 ggsave(filename = "Plots/Dactionmycin_Brood_SWAP.pdf", height = 6, width = 10, dpi = 400)
 
+######################################################################################################################## human data
+
+human_swap <- data.table::fread(glue::glue("{etoposide_data}20170130_human-cell_reads.csv")) 
+
+reads <- data.frame(t(human_swap))%>%
+  dplyr::select(-X4)
+colnames(reads) <- c("guide", "condition","amplicon","top2a_wt","top2a_edit","top2b_wt","top2b_edit")
+reads <- reads[2:nrow(reads),]
+reads$top2a_wt <- as.numeric(as.character(reads$top2a_wt))
+reads$top2a_edit <- as.numeric(as.character(reads$top2a_edit))
+reads$top2b_wt <- as.numeric(as.character(reads$top2b_wt))
+reads$top2b_edit <- as.numeric(as.character(reads$top2b_edit))
+
+
+# # # #  TOP2A
+reads <- dplyr::mutate(reads, fraction_edited = ifelse(amplicon == "TOP2A", top2a_edit/ top2a_wt, top2b_edit/ top2b_wt))
+
+top2a_o <- dplyr::filter(reads, guide == "No guide", 
+                         # guide == "TOP2A", 
+                         condition %in%c("Cellline Control D1"),
+                         amplicon == "TOP2A")%>%  
+  dplyr::select( condition, amplicon, fraction_edited)%>%
+  tidyr::spread(condition, fraction_edited)
+
+colnames(top2a_o) <- c("amplicon","0")
+
+top2a_ctrl <- dplyr::filter(reads, guide != "No guide", 
+                            guide == "TOP2A", 
+                            condition %in%c("Early Time Point", "No Drug"),
+                            amplicon == "TOP2A")%>%
+  dplyr::select(guide, condition, amplicon, fraction_edited)%>%
+  tidyr::spread(condition, fraction_edited)
+
+colnames(top2a_ctrl) <- c("guide","amplicon","1","2")
+
+top2a_ctrl <- top2a_ctrl%>%
+  dplyr::left_join(.,top2a_o,by="amplicon")
+
+top2a_expt <- reads%>%
+  dplyr::filter( guide == "TOP2A", 
+                 !condition %in%c("Early Time Point"),
+                 amplicon == "TOP2A")%>%
+  dplyr::select(guide, condition, amplicon, fraction_edited)%>%
+  dplyr::left_join(.,top2a_ctrl, by = c("amplicon","guide"))%>%
+  tidyr::gather(timepoint, base_fraction, -condition, -amplicon, -guide, -fraction_edited)%>%
+  dplyr::mutate(fraction = ifelse(timepoint == "0", base_fraction,
+                                  ifelse(timepoint == "1", base_fraction,
+                                         ifelse(timepoint == "2", fraction_edited, NA))))%>%
+  dplyr::mutate(fold = ifelse(timepoint == "0", base_fraction,
+                              ifelse(timepoint == "1", base_fraction,
+                                     ifelse(timepoint == "2", fraction_edited/base_fraction, NA))))%>%
+  dplyr::mutate(l_frac = log10(fraction))
+
+top2a_expt%>%
+  dplyr::filter(timepoint != "0", grepl("Mid|No|Actin", condition))%>%
+  dplyr::mutate(xlabels = ifelse(timepoint == 1, "Pre-treatment", "Post-treatment"))%>%
+  ggplot(.)+
+  aes(x = factor(xlabels, levels = c("Pre-treatment", "Post-treatment"), 
+                 labels = c("Pre-treatment", "Post-treatment"), 
+                 ordered = T), 
+      y = (fraction), group = condition, color = condition)+
+  geom_line(size = 2)+
+  scale_color_manual(values=c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#990000", "#D55E00", "#CC79A7"),
+                     name="Experimental\nCondition",
+                     breaks=c("No Drug","Amsacrine Hydrochloride Mid", "Actinomycin D Low", "Etoposide Mid","Teniposide Mid","XK469 Mid"),
+                     labels=c("No Drug","Amsacrine", "Dactinomycin", "Etoposide",  "Teniposide", "XK469"))+
+  scale_y_log10(limits=c(0.0001,0.1))+
+  base_theme+
+  scale_x_discrete(expand = c(0,.1))+  
+  theme(panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank()) +
+  labs(y = "Fraction Edited Reads")
+
+ggsave(filename = "Plots/Human_SWAP.png", height = 6, width = 8, dpi = 400)
+ggsave(filename = "Plots/Human_SWAP.pdf", height = 6, width = 8, dpi = 400)
+
 ######################################################################################################################## PopGene
 
-load("Data/etoposide_II_7598325-8210489_Diversity_Statistics.Rda")
+# args <- c("II","10050022","12062611","Ce330_annotated.vcf.gz","WS245_exons.gff", "Etoposide")
 
-qtl_start <- 7598325
-qtl_end <- 8210489
-dbt_start <- 7942463
-dbt_end <- 7945206
+load("Data/Etoposide_II_10050022-12062611_Diversity_Statistics.Rda")
+
+qtl_start <- 10050022
+qtl_end <- 12062611
+top2_start <- 11875145
+top2_end <- 11880588
 
 td_df <- neutrality_df %>%
   dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
@@ -401,15 +480,18 @@ td_df %>%
   scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
   facet_grid(statistic~., scales = "free")+
   base_theme +
-  geom_vline(aes(xintercept = qtl_start/1e6), color = "#E68FAC")+
-  geom_vline(aes(xintercept = qtl_end/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = top2_start/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = top2_end/1e6), color = "#E68FAC")+
   theme(panel.grid.major = element_blank(),
         legend.position = "none",
         axis.line = element_line(colour = axis_color),
         axis.title.y = element_blank()) +
   labs(x = "Genomic Position (Mb)")
 
-load("Data/etoposide_test_interval_II_7598325-8210489_Diversity_Statistics.Rda")
+ggsave(filename = "Plots/etoposide_popgen.png", height = 8, width = 12, dpi = 400)
+ggsave(filename = "Plots/Human_SWAP.pdf", height = 6, width = 8, dpi = 400)
+
+load("Data/etoposide_test_interval_10050022-12062611_Diversity_Statistics.Rda")
 
 td_df <- neutrality_df %>%
   dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
