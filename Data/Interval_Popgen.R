@@ -14,7 +14,8 @@ require(tidyverse)
 # 6 - Save Label
 # test args
 # args <- c("II","7598325","8210489","Ce330_annotated.vcf.gz","WS245_exons.gff", "Arsenic")
-
+# Running script
+# Rscript --vanilla Interval_Popgen.R II 10050022 12062611 Ce330_annotated.vcf.gz WS245_exons.gff Etoposide
 args <- commandArgs(TRUE)
 
 system(glue::glue("echo Initializing PopGenome Parameters"))
