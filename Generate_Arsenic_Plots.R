@@ -53,6 +53,7 @@ arsenic_linkage %>%
         panel.border = element_rect(fill = NA))
 
 ggsave(filename = "Plots/Arsenic_PC1_Linkage.png", height = 4, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_Linkage.pdf", height = 4, width = 12, dpi = 400)
 
 ######################################################################################################################## Linkage LOD PLOT
 
