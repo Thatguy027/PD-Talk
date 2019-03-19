@@ -356,6 +356,7 @@ complete_arsenic %>%
   labs(y = "Arsenic - Control")
 
 ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.png", height = 10, width = 10, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.pdf", height = 10, width = 10, dpi = 400)
 
 ######################################################################################################################## Metabolites straight in arsenic
 controls_new <- L1_fa %>% 
