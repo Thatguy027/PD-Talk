@@ -40,6 +40,41 @@ ggsave(filename = "Plots/RIAIL_Genotypes.png", height = 8, width = 12, dpi = 400
 # ARSENIC
 ########################################################################################################################
 
+######################################################################################################################## Dose Response
+
+arsenic_DR <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 1.tsv"))
+arsenic_DR <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 1.tsv"))
+
+dr_plt_df <- arsenic_DR%>%
+  dplyr::filter(Trait %in% "mean.TOF") %>%
+  dplyr::filter(Trait %in% c("mean.TOF", "PC1")) %>%
+  dplyr::mutate(flip_pc = ifelse(Trait == "PC1", -Value, Value)) %>%
+  dplyr::mutate(Tidy_trait = ifelse(Trait == "mean.TOF", "Animal Size", 
+                                    ifelse(Trait == "norm.n"," Brood Size",
+                                           ifelse(Trait == "mean.norm.EXT", "Optical Density",
+                                                  ifelse(Trait =="mean.norm.yellow", "Fluorescence","PC 1")))),
+                tidy_cond = factor(Condition, 
+                                   levels = c("Water", "arsenic1", "arsenic2", "arsenic3","arsenic4"),
+                                   labels = c("0", "250", "500", "1000","2000"))) 
+
+
+dr_plt_df%>%
+  ggplot()+
+  aes(x = tidy_cond, 
+      y = flip_pc, 
+      fill = Strain)+
+  geom_boxplot(outlier.colour = NA)+
+  scale_fill_manual(values = strain_colors, name = "Strain")+
+  theme_bw()+
+  labs(x = "Arsenic (µM)", y = "Animal Length") + 
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color))
+
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.png", height = 4, width = 6, dpi = 400)
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.pdf", height = 4, width = 6, dpi = 400)
+
 ######################################################################################################################## Linkage LOD PLOT
 
 arsenic_linkage <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 11.tsv"))
@@ -429,6 +464,7 @@ complete_arsenic %>%
   labs(y = "Arsenic - Control")
 
 ggsave(filename = "Plots/Arsenic_PC1_StraightChain_Arsenic.png", height = 10, width = 10, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_StraightChain_Arsenic.pdf", height = 10, width = 10, dpi = 400)
 
 ######################################################################################################################## Metabolites ratios in control
 
@@ -493,6 +529,7 @@ complete_arsenic %>%
   labs(y = "Metabolite Levels")
 
 ggsave(filename = "Plots/Arsenic_PC1_ISO_Control.png", height = 10, width = 10, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_ISO_Control.pdf", height = 10, width = 10, dpi = 400)
 
 ######################################################################################################################## RESCUE
 arsenic_rescue <- data.table::fread(glue::glue("{arsenic_data}Figure 4-source data 5.tsv"))
@@ -557,6 +594,7 @@ boxplot_plt(df = rescue_pheno_pr,
         axis.title.x = element_blank()) 
 
 ggsave(filename = "Plots/Arsenic_PC1_Rescue.png", height = 8, width = 14, dpi = 400)
+ggsave(filename = "Plots/Arsenic_PC1_Rescue.pdf", height = 8, width = 14, dpi = 400)
 
 ######################################################################################################################## PopGene
 
