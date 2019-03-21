@@ -36,6 +36,42 @@ plot_riail_geno(df) +
 
 ggsave(filename = "Plots/RIAIL_Genotypes.png", height = 8, width = 12, dpi = 400)
 
+
+######################################################################################################################## Example Dose Response
+
+arsenic_DR <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 1.tsv"))
+arsenic_DR <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 1.tsv"))
+
+dr_plt_df <- arsenic_DR%>%
+  dplyr::filter(Trait %in% "mean.TOF", Strain %in% c("N2", "CB4856"), Condition %in% c("Water", "arsenic1")) %>%
+  dplyr::filter(Trait %in% c("mean.TOF", "PC1")) %>%
+  dplyr::mutate(flip_pc = ifelse(Trait == "PC1", -Value, Value)) %>%
+  dplyr::mutate(Tidy_trait = ifelse(Trait == "mean.TOF", "Animal Size", 
+                                    ifelse(Trait == "norm.n"," Brood Size",
+                                           ifelse(Trait == "mean.norm.EXT", "Optical Density",
+                                                  ifelse(Trait =="mean.norm.yellow", "Fluorescence","PC 1")))),
+                tidy_cond = factor(Condition, 
+                                   levels = c("Water", "arsenic1", "arsenic2", "arsenic3","arsenic4"),
+                                   labels = c("Control", "Toxin", "500", "1000","2000"))) 
+
+
+dr_plt_df%>%
+  ggplot()+
+  aes(x = tidy_cond, 
+      y = flip_pc, 
+      fill = Strain)+
+  geom_boxplot(outlier.colour = NA)+
+  scale_fill_manual(values = c("gray50", highlight_color), name = "Strain")+
+  theme_bw()+
+  labs(x = "Arsenic (µM)", y = "Animal Length") + 
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())
+
+ggsave(filename = "Plots/Drug_Effect_Example.png", height = 6, width = 8, dpi = 400)
+
 ########################################################################################################################
 # ARSENIC
 ########################################################################################################################
@@ -70,10 +106,11 @@ dr_plt_df%>%
   base_theme +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
-        axis.line = element_line(colour = axis_color))
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())
 
-ggsave(filename = "Plots/Arsenic_Animal_Length_DR.png", height = 6, width = 12, dpi = 400)
-ggsave(filename = "Plots/Arsenic_Animal_Length_DR.pdf", height = 6, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.png", height = 6, width = 8, dpi = 400)
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.pdf", height = 6, width = 16, dpi = 400)
 
 ######################################################################################################################## Linkage LOD PLOT
 
