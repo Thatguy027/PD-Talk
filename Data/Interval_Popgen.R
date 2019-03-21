@@ -56,7 +56,7 @@ POPGENOME_GFF <- args[5]
 
 system(glue::glue("echo PopGenome - Reading VCF file {ANALYSIS_CHROM}")) 
 
-vcf_handle <- vcf_open(POPGENOME_VCF)
+vcf_handle <- WhopGenome::vcf_open(POPGENOME_VCF)
 
 GENOME_OBJECT <- Whop_readVCF(
   vcf_handle, 

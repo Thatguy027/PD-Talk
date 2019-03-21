@@ -154,7 +154,8 @@ pxgplot_edit <- function(cross, map, parent="N2xCB4856") {
 cegwas2_manplot <- function(plot_df, 
                             bf_line_color = "gray",
                             eigen_line_color = "gray",
-                            eigen_cutoff = independent_test_cutoff) {
+                            eigen_cutoff = independent_test_cutoff,
+                            mapped_cutoff = "BF") {
   plot_traits <- unique(plot_df$trait)
   plots <- lapply(plot_traits, function(i) {
     
@@ -169,7 +170,7 @@ cegwas2_manplot <- function(plot_df,
       dplyr::mutate(EIGEN_SIG = ifelse(log10p > bf_cut, "1", 
                                        ifelse(log10p > EIGEN_CUTOFF, "2", "0")) )
     
-    plot_df_pr  %>%
+    pt <- plot_df_pr  %>%
       ggplot2::ggplot(.) +
       ggplot2::aes(x = POS/1e6, y = log10p) +
       ggplot2::scale_color_manual(values = c("0" = "black", 
@@ -178,13 +179,6 @@ cegwas2_manplot <- function(plot_df,
       ggplot2::scale_alpha_manual(values = c("0" = 0.5, 
                                              "1" = 1,
                                              "2" = 1)) +
-      ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
-                                      xmax = endPOS/1e6, 
-                                      ymin = 0, 
-                                      ymax = Inf, 
-                                      fill = "hotpink3"), 
-                         color = "hotpink",linetype = 2, 
-                         alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())+
       ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
                                       xmax = endPOS/1e6, 
                                       ymin = 0, 
@@ -207,6 +201,17 @@ cegwas2_manplot <- function(plot_df,
       ggplot2::labs(x = "Genomic Position (Mb)",
                     y = expression(-log[10](italic(p))),
                     title = plot_traits)
+    if(mapped_cutoff != "BF") {
+      pt 
+    } else {
+      pt +  ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
+                                            xmax = endPOS/1e6, 
+                                            ymin = 0, 
+                                            ymax = Inf, 
+                                            fill = "hotpink3"), 
+                               color = "hotpink",linetype = 2, 
+                               alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())
+    }
   })
   plots
 }
