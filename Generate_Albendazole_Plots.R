@@ -102,12 +102,12 @@ ggsave("Plots/ABZ_q90TOF_SKAT.png",
        height = 4, 
        width = 12)
 
-######################################################################################################################## 
+######################################################################################################################## Ben-1 removed
 
 
 
 
-pr_maps <- data.table::fread(glue::glue("{albendazole_data}Final_Tables/regressed_trait_processed_mapping.tsv"))
+pr_maps <- data.table::fread(glue::glue("{albendazole_data}Final_Tables/ben1v_rem_Albendazole_mean.TOF_processed_mapping.tsv"))
 
 independent_tests <- 1159.75
 
@@ -120,8 +120,33 @@ cegwas2_manplot(plot_df = pr_maps, eigen_cutoff = -log10(0.05/independent_tests)
   ggplot2::labs(x = "Genomic Position (Mb)",
                 y = expression(-log[10](italic(p))))
 
-ggsave(filename = "Plots/ABZ_q90TOF_GWA.png", height = 4, width = 12, dpi = 400)
+ggsave(filename = "Plots/ABZ_q90TOF_ben1v_Removed_GWA.png", height = 4, width = 12, dpi = 400)
 
 
 ########################################################################################################################
-args <- c("II","10050022","12062611","Ce330_annotated.vcf.gz","WS245_exons.gff", "Etoposide")
+
+
+load("Data/ben1_III_3000000-4000000_Diversity_Statistics.Rda")
+
+ben1_start <- 3537688
+ben1_end <- 3541628
+
+td_df <- neutrality_df %>%
+  dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
+  dplyr::group_by(statistic) %>%
+  dplyr::mutate(scaled_value = scale(value))
+
+td_df %>%
+  ggplot()+
+  aes(x = WindowPosition/1e6, y = value, color = statistic)+
+  geom_point(size = point_size, alpha = point_alpha)+
+  scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
+  facet_grid(statistic~., scales = "free")+
+  base_theme +
+  geom_vline(aes(xintercept = ben1_start/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = ben1_end/1e6), color = "#E68FAC")+
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
+        axis.line = element_line(colour = axis_color),
+        axis.title.y = element_blank()) +
+  labs(x = "Genomic Position (Mb)")

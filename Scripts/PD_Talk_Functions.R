@@ -179,13 +179,6 @@ cegwas2_manplot <- function(plot_df,
       ggplot2::scale_alpha_manual(values = c("0" = 0.5, 
                                              "1" = 1,
                                              "2" = 1)) +
-      ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
-                                      xmax = endPOS/1e6, 
-                                      ymin = 0, 
-                                      ymax = Inf, 
-                                      fill = "blue"), 
-                         color = "blue",fill = "cyan",linetype = 2, 
-                         alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG=="1") %>% na.omit())+
       ggplot2::geom_hline(ggplot2::aes(yintercept = bf_cut),
                           color = bf_line_color, 
                           alpha = .75,  
@@ -201,8 +194,24 @@ cegwas2_manplot <- function(plot_df,
       ggplot2::labs(x = "Genomic Position (Mb)",
                     y = expression(-log[10](italic(p))),
                     title = plot_traits)
-    if(mapped_cutoff != "BF") {
-      pt 
+    if(mapped_cutoff == "BF") {
+      pt <- pt +
+        ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
+                                        xmax = endPOS/1e6, 
+                                        ymin = 0, 
+                                        ymax = Inf, 
+                                        fill = "blue"), 
+                           color = "blue",fill = "cyan",linetype = 2, 
+                           alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG=="1") %>% na.omit()) 
+      if(grepl("2", unique(plot_df_pr$EIGEN_SIG) )){
+        pt + ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
+                                             xmax = endPOS/1e6, 
+                                             ymin = 0, 
+                                             ymax = Inf, 
+                                             fill = "hotpink3"), 
+                                color = "hotpink",linetype = 2, 
+                                alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())
+      }
     } else {
       pt +  ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
                                             xmax = endPOS/1e6, 

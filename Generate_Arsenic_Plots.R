@@ -72,23 +72,23 @@ dr_plt_df%>%
         panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color))
 
-ggsave(filename = "Plots/Arsenic_Animal_Length_DR.png", height = 4, width = 6, dpi = 400)
-ggsave(filename = "Plots/Arsenic_Animal_Length_DR.pdf", height = 4, width = 6, dpi = 400)
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.png", height = 6, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_Animal_Length_DR.pdf", height = 6, width = 12, dpi = 400)
 
 ######################################################################################################################## Linkage LOD PLOT
 
 arsenic_linkage <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 11.tsv"))
 
 arsenic_linkage %>%
-  dplyr::filter(trait == ".PC1") %>%
+  dplyr::filter(trait == ".mean.TOF") %>%
   maxlodplot_edit() +
   base_theme +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         panel.border = element_rect(fill = NA))
 
-ggsave(filename = "Plots/Arsenic_PC1_Linkage.png", height = 4, width = 12, dpi = 400)
-ggsave(filename = "Plots/Arsenic_PC1_Linkage.pdf", height = 4, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_Linkage.png", height = 4, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_Linkage.pdf", height = 4, width = 12, dpi = 400)
 
 ######################################################################################################################## Linkage LOD PLOT
 
@@ -105,23 +105,23 @@ blankcross <- N2xCB4856cross
 # Plot Linkage Mapping - PxG
 arsenic_cross <- linkagemapping::mergepheno(blankcross, arsenic_linkage_pheno, set = 2)
 
-pxgplot_edit(arsenic_cross, dplyr::filter(arsenic_linkage, trait == ".PC1"))+ 
+pxgplot_edit(arsenic_cross, dplyr::filter(arsenic_linkage, trait == ".mean.TOF"))+ 
   scale_x_discrete(breaks=c("N2", "CB4856"),labels=c("N2", "CB4856"))+
-  labs(y = "PC1", x = "RIAIL Genotype at Peak Marker") +
+  labs(y = "Animal Length", x = "RIAIL Genotype at Peak Marker") +
   base_theme +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color)) +
   labs(title = "")
  
-ggsave(filename = "Plots/Arsenic_PC1_Linkage_PxG.png", height = 6, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_Linkage_PxG.png", height = 6, width = 12, dpi = 400)
 
 ######################################################################################################################## NILs
 
 arsenic_nil_pheno <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 13.tsv"))
 
 arsenic_nil_pheno %>%
-  dplyr::filter(Trait == "PC1",
+  dplyr::filter(Trait == "mean.TOF",
                 Strain%in%c("N2","CB4856","ECA414","ECA434"))%>%
   dplyr::mutate(strain1 = factor(Strain, levels = c("N2","CB4856","ECA414","ECA434","ECA581",
                                                     "ECA582","ECA589","ECA590","ECA591"),
@@ -134,7 +134,7 @@ arsenic_nil_pheno %>%
                                            "CB4856(S78C)\nC")))%>%
   ggplot(.) +
   aes(x = factor(strain1), 
-      y = -Value, 
+      y = Value, 
       fill=Strain) +
   geom_beeswarm(alpha = point_alpha,
                 priority = "density",
@@ -148,26 +148,26 @@ arsenic_nil_pheno %>%
         axis.line = element_line(colour = axis_color),
         axis.title.x = element_blank(),
         plot.title = element_blank()) +
-  labs( y = paste0("PC 1"))
+  labs( y = paste0("Animal Length"))
 
-ggsave(filename = "Plots/Arsenic_PC1_NIL.png", height = 6, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_NIL.png", height = 6, width = 12, dpi = 400)
 
 ######################################################################################################################## GWA MANHATTAN PLOT
 
-arsenic_gwa <- data.table::fread(glue::glue("{arsenic_data}Figure 2-source data 4.tsv"))
+arsenic_gwa <- data.table::fread(glue::glue("{arsenic_data}q90.TOF_processed_mapping.tsv"))
 independent_tests <- 500
-gwas_fine_mapping <- readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 8.zip")) 
+gwas_fine_mapping <- readr::read_tsv(glue::glue("{arsenic_data}q90.TOF_snpeff_genes.tsv")) 
 # geno_matrix <- readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 8.zip"))%>%
 #   na.omit()
 
-cegwas2_manplot(arsenic_gwa, eigen_cutoff = -log10(0.05/independent_tests))[[1]] + 
+cegwas2_manplot(plot_df = arsenic_gwa, eigen_cutoff = -log10(0.05/independent_tests),mapped_cutoff = "BF")[[1]] + 
   base_theme +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         panel.border = element_rect(fill = NA)) +
   labs(title = "")
 
-ggsave(filename = "Plots/Arsenic_PC1_GWA.png", height = 4, width = 12, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_GWA.png", height = 4, width = 12, dpi = 400)
 
 ######################################################################################################################## GWA PxG
 
@@ -209,14 +209,14 @@ pxg_df %>%
                 data = dplyr::filter(pxg_df, strain %in% c("CB4856", "N2")))+
   scale_fill_manual(values=strain_colors)+
   scale_size_manual(values=c(point_highlight_size,point_highlight_size,point_size))+
-  labs(y = "PC 1",
+  labs(y = "Animal Length",
        x = glue::glue("Genotype at {peak_pos}")) +
   base_theme +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color))
 
-ggsave(filename = "Plots/Arsenic_PC1_GWA_PxG.png", height = 6, width = 8, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_GWA_PxG.png", height = 6, width = 8, dpi = 400)
 
 ######################################################################################################################## GWA PEAK LD
 gm <- readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 5.tsv"))
@@ -233,13 +233,12 @@ ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.png", height = 8, width = 12, dp
 ggsave(filename = "Plots/Arsenic_PC1_GWA_PeakLD.pdf", height = 8, width = 12, dpi = 400)
 
 ######################################################################################################################## GWA Fine mapping
-arsenic_fine_mapping <-  readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 8.zip")) 
+arsenic_fine_mapping <-  data.table::fread(glue::glue("{arsenic_data}q90.TOF_snpeff_genes.tsv")) 
 
 snpeff_fine <- arsenic_fine_mapping %>%
   dplyr::filter(CHROM == "II") %>%
   dplyr::select(MARKER, POS, STRAIN, REF,ALT, TGT = STRAIN_GENOTYPE, VARIANT_IMPACT,
-                VARIANT_LD_WITH_PEAK_MARKER, PEAK_MARKER, QTL_INTERVAL_START,
-                QTL_INTERVAL_END, VARIANT_LOG10p)
+                VARIANT_LD_WITH_PEAK_MARKER, PEAK_MARKER, QTL_INTERVAL_START,QTL_INTERVAL_END, VARIANT_LOG10p)
 
 snpeff_fine$VARIANT_IMPACT[is.na(snpeff_fine$VARIANT_IMPACT)] <- "INTERGENIC"
 
@@ -274,8 +273,8 @@ LD_genotypes%>%
   theme(panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color))
 
-ggsave(filename = "Plots/Arsenic_PC1_GWA_FineMap.png", height = 6, width = 16, dpi = 400)
-ggsave(filename = "Plots/Arsenic_PC1_GWA_FineMap.pdf", height = 6, width = 16, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.png", height = 6, width = 16, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.pdf", height = 6, width = 16, dpi = 400)
 
 ######################################################################################################################## SWAP
 
@@ -283,7 +282,7 @@ ggsave(filename = "Plots/Arsenic_PC1_GWA_FineMap.pdf", height = 6, width = 16, d
 arsenic_swap <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 13.tsv"))
 
 arsenic_swap%>%
-  dplyr::filter(Trait == "PC1",
+  dplyr::filter(Trait == "mean.TOF",
                 Strain != "ECA591", 
                 Strain != "ECA414", 
                 Strain != "ECA434", 
@@ -298,7 +297,7 @@ arsenic_swap%>%
                                  ordered = T))%>%
   ggplot(.) +
   aes(x = factor(strain1), 
-      y = -Value, 
+      y = Value, 
       fill= Strain) +
   geom_beeswarm(cex=1.2,priority='density', alpha = point_alpha, size = point_size)+
   geom_boxplot(outlier.colour = NA, alpha = boxplot_alpha)+
@@ -308,9 +307,9 @@ arsenic_swap%>%
                       panel.grid.major = element_blank(),
                       axis.line = element_line(colour = axis_color),
                       axis.title.x = element_blank()) +
-  labs( y = paste0("PC 1"))
+  labs( y = paste0("Animal Length"))
 
-ggsave(filename = "Plots/Arsenic_PC1_SWAP.png", height = 6, width = 10, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_SWAP.png", height = 6, width = 10, dpi = 400)
 
 ######################################################################################################################## Metabolites ratio in arsenic
 
@@ -551,9 +550,9 @@ cc <- c("Arsenic",
         "ArsenicC15ISO64")
 
 boxplot_plt(df = rescue_pheno_pr,
-            trt = "PC1",
+            trt = "mean.TOF",
             cond = cc,
-            fancy_name = paste0("PC 1"),
+            fancy_name = "Animal Length",
             strains = c("N2",
                         "CB4856",
                         "ECA581",
@@ -593,8 +592,51 @@ boxplot_plt(df = rescue_pheno_pr,
         axis.line = element_line(colour = axis_color),
         axis.title.x = element_blank()) 
 
-ggsave(filename = "Plots/Arsenic_PC1_Rescue.png", height = 8, width = 14, dpi = 400)
-ggsave(filename = "Plots/Arsenic_PC1_Rescue.pdf", height = 8, width = 14, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_Rescue.png", height = 8, width = 14, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_Rescue.pdf", height = 8, width = 14, dpi = 400)
+
+######################################################################################################################## Human data
+
+human_reads <- readr::read_csv(glue::glue("{arsenic_data}Figure 5-source data 1.csv"))
+
+pr_reads <- human_reads %>%
+  dplyr::filter(Arsenic_Concentration %in% c("0uM","5uM")) %>%
+  na.omit() %>%
+  dplyr::mutate(perc_edit = Guide1_edit/Guide1_total) %>%
+  dplyr::select(Edit, Replicate, Arsenic_Concentration, perc_edit) 
+
+cntrl <- pr_reads %>%
+  dplyr::filter(Arsenic_Concentration == "0uM") %>%
+  dplyr::rename(control_edit = perc_edit) %>%
+  dplyr::select(-Arsenic_Concentration) %>%
+  dplyr::group_by(Edit, Replicate) %>%
+  dplyr::mutate(control_means = mean(control_edit))
+
+arsenic_5 <- pr_reads %>%
+  dplyr::filter(Arsenic_Concentration == "5uM") %>%
+  dplyr::rename(arsenic_edit = perc_edit) %>%
+  dplyr::left_join(., cntrl, by = c("Edit", "Replicate")) %>%
+  dplyr::mutate(delta_cntrl = (arsenic_edit - control_means)*100) %>%
+  dplyr::distinct(Edit, delta_cntrl, .keep_all=T) %>%
+  dplyr::group_by(Edit) %>%
+  dplyr::summarise(mean_delta = mean(delta_cntrl),
+                   sd_delta = sd(delta_cntrl))
+
+ggplot(arsenic_5)+
+  aes(x = factor(Edit, levels = c("W84C","S112C","R113C")), y = mean_delta, fill = factor(Edit, levels = c("W84C","S112C","R113C")))+
+  geom_bar(stat="identity", color = "black", size = 1) +
+  geom_errorbar(aes(ymin=mean_delta, ymax=mean_delta+sd_delta), width=.2, size =1) +
+  scale_fill_manual(values = c("hotpink3", "cadetblue3","black")) +
+  labs(y = "Percent Edit Enrichment in Arsenic") +
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank()) 
+
+ggsave(glue::glue("Plots/Arsenic_Human_Cell_Barplot.pdf"), 
+       height = 6, 
+       width = 8)
 
 ######################################################################################################################## PopGene
 
