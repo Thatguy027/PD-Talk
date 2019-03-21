@@ -188,7 +188,6 @@ cegwas2_manplot <- function(plot_df,
                           alpha = .75,  
                           size = 1,
                           linetype = 2) +
-      ggplot2::geom_point( ggplot2::aes(color= factor(EIGEN_SIG), alpha = factor(EIGEN_SIG)), size = 1 ) +
       ggplot2::facet_grid( . ~ CHROM, scales = "free_x" , space = "free_x") +
       ggplot2::theme_bw() +
       ggplot2::labs(x = "Genomic Position (Mb)",
@@ -204,7 +203,7 @@ cegwas2_manplot <- function(plot_df,
                            color = "blue",fill = "cyan",linetype = 2, 
                            alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG=="1") %>% na.omit()) 
       if(grepl("2", unique(plot_df_pr$EIGEN_SIG) )){
-        pt + ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
+       pt <- pt + ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
                                              xmax = endPOS/1e6, 
                                              ymin = 0, 
                                              ymax = Inf, 
@@ -212,6 +211,7 @@ cegwas2_manplot <- function(plot_df,
                                 color = "hotpink",linetype = 2, 
                                 alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())
       }
+      pt <- pt + ggplot2::geom_point( ggplot2::aes(color= factor(EIGEN_SIG), alpha = factor(EIGEN_SIG)), size = 1 ) 
     } else {
       pt +  ggplot2::geom_rect(ggplot2::aes(xmin = startPOS/1e6, 
                                             xmax = endPOS/1e6, 
@@ -219,7 +219,8 @@ cegwas2_manplot <- function(plot_df,
                                             ymax = Inf, 
                                             fill = "hotpink3"), 
                                color = "hotpink",linetype = 2, 
-                               alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit())
+                               alpha=.3, data = dplyr::filter(plot_df_pr, EIGEN_SIG!="1") %>% na.omit()) +
+        ggplot2::geom_point( ggplot2::aes(color= factor(EIGEN_SIG), alpha = factor(EIGEN_SIG)), size = 1 )
     }
   })
   plots
