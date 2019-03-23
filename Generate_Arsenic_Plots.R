@@ -153,6 +153,35 @@ pxgplot_edit(arsenic_cross, dplyr::filter(arsenic_linkage, trait == ".mean.TOF")
  
 ggsave(filename = "Plots/Arsenic_TOF_Linkage_PxG.png", height = 6, width = 12, dpi = 400)
 
+riail_bar_pheno <- rial_bar_plot(arsenic_cross,
+                                 dplyr::filter(arsenic_linkage, trait == ".mean.TOF"),
+                                 color_by_genotype = F )
+
+riail_bar_pheno[[2]] +
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+ggsave(filename = "Plots/Arsenic_TOF_Linkage_BAR_gray.png", height = 6, width = 12, dpi = 400)
+
+riail_bar_pheno <- rial_bar_plot(arsenic_cross,
+                                 dplyr::filter(arsenic_linkage, trait == ".mean.TOF"),
+                                 color_by_genotype = T )
+
+riail_bar_pheno[[2]] +
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+ggsave(filename = "Plots/Arsenic_TOF_Linkage_BAR_GENO_Color.png", height = 6, width = 12, dpi = 400)
+
+
 ######################################################################################################################## NILs
 
 arsenic_nil_pheno <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 13.tsv"))
@@ -254,6 +283,49 @@ pxg_df %>%
         axis.line = element_line(colour = axis_color))
 
 ggsave(filename = "Plots/Arsenic_TOF_GWA_PxG.png", height = 6, width = 8, dpi = 400)
+
+arsenic_phenos <- na.omit(arsenic_gwa) %>%
+  dplyr::select(strain, phenotype = value, allele) %>%
+  dplyr::mutate(clean_geno = ifelse(strain == "N2", "N2",
+                                    ifelse(strain == "CB4856","CB4856",
+                                           ifelse(allele == -1, "REF","ALT")))) %>%
+  dplyr::arrange(phenotype) %>%
+  dplyr::mutate(norm_pheno_temp = ifelse(phenotype == min(phenotype), 0, 1))%>%
+  dplyr::mutate(delta_pheno = ifelse(norm_pheno_temp == 0, 0, abs(dplyr::lag(phenotype) - phenotype)))%>%
+  dplyr::mutate(norm_pheno = cumsum(delta_pheno)) %>%
+  dplyr::mutate(final_pheno = norm_pheno/max(norm_pheno)) %>%
+  dplyr::select(phenotype = final_pheno, clean_geno) %>%
+  dplyr::mutate(strain = factor(1:n()))
+
+arsenic_phenos%>%
+  ggplot()+
+  aes(x=strain, y= phenotype, fill = clean_geno)+
+  geom_bar(stat="identity", color = "black", size = .1) +
+  labs(x = "Wild isolate", y = paste0("Arsenic sensititivity")) +
+  scale_fill_manual(values=strain_colors)+
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.line = element_line(colour = axis_color))
+
+ggsave(filename = "Plots/Arsenic_TOF_GWA_PHENO_BAR.png", height = 6, width = 12, dpi = 400)
+
+arsenic_phenos%>%
+  ggplot()+
+  aes(x=strain, y= phenotype, fill = clean_geno)+
+  geom_bar(stat="identity", color = "black", size = .1) +
+  labs(x = "Wild isolate", y = paste0("Arsenic sensititivity")) +
+  scale_fill_manual(values=c(highlight_color, highlight_color, "gray60", "gray60"))+
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.line = element_line(colour = axis_color))
+
+ggsave(filename = "Plots/Arsenic_TOF_GWA_PHENO_BAR_TWO_COLOR.png", height = 6, width = 12, dpi = 400)
 
 ######################################################################################################################## GWA PEAK LD
 gm <- readr::read_tsv(glue::glue("{arsenic_data}Figure 2-source data 5.tsv"))

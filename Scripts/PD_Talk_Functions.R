@@ -327,5 +327,95 @@ Plot_Peak_LD <- function(processed_mapping, genotype_matrix){
   return(list(ldplot, LDs))
 }
 
-
+rial_bar_plot <- function(cross, map, parent="N2xCB4856", color_by_genotype = TRUE) {
+  peaks <- map %>% 
+    dplyr::group_by(iteration) %>%
+    dplyr::filter(!is.na(var_exp)) %>%
+    dplyr::do(head(., n=1))
+  
+  if(nrow(peaks) == 0) {
+    stop("No QTL identified")
+  }
+  
+  uniquemarkers <- gsub("-", "\\.", unique(peaks$marker))
+  
+  colnames(cross$pheno) <- gsub("-", "\\.", colnames(cross$pheno))
+  
+  pheno <- cross$pheno %>%
+    dplyr::select_( phenotype = map$trait[1])
+  
+  geno <- data.frame(extract_genotype(cross)) %>%
+    dplyr::select(which(colnames(.) %in% uniquemarkers)) %>%
+    data.frame(., pheno) %>%
+    na.omit() %>%
+    dplyr::arrange(phenotype) %>%
+    dplyr::mutate(norm_pheno_temp = ifelse(phenotype == min(phenotype), 0, 1))%>%
+    dplyr::mutate(delta_pheno = ifelse(norm_pheno_temp == 0, 0, abs(dplyr::lag(phenotype) - phenotype)))%>%
+    dplyr::mutate(norm_pheno = cumsum(delta_pheno)) %>%
+    dplyr::mutate(final_pheno = norm_pheno/max(norm_pheno)) %>%
+    dplyr::select(-(phenotype:norm_pheno))
+  
+  colnames(geno)[1:(ncol(geno)-1)] <- sapply(colnames(geno)[1:(ncol(geno)-1)],
+                                             function(marker) {
+                                               paste(
+                                                 unlist(
+                                                   peaks[
+                                                     peaks$marker == 
+                                                       gsub("\\.",
+                                                            "-",
+                                                            marker),
+                                                     c("chr", "pos")]),
+                                                 collapse = ":")
+                                             })
+  colnames(geno)[ncol(geno)] <- "pheno"
+  
+  split <- geno%>%
+    dplyr::mutate(strain = factor(1:n()))%>%
+    tidyr::gather(marker, genotype, -pheno, -strain)
+  
+  split$genotype <- sapply(split$genotype, function(x){
+    if(is.na(x)) {
+      return(NA)
+    }
+    if(parent=="N2xCB4856") {
+      if(x == -1) {
+        "N2"
+      } else {
+        "CB4856"
+      }
+    } else if(parent=="N2xLSJ2") {
+      if(x == -1) {
+        "N2"
+      } else {
+        "LSJ2"
+      }
+    } else if(parent=="AF16xHK104") {
+      if(x==-1) {
+        "AF16"
+      } else {
+        "HK104"
+      }
+    }
+  })
+  
+  plots <- list()
+  for(qtl in 1:length(unique(split$marker))){
+    plots[[qtl]] <- split%>%
+      dplyr::filter(marker == unique(split$marker)[qtl]) %>%
+      ggplot()+
+      aes(x=strain, y= pheno, fill = genotype)+
+      geom_bar(stat="identity", color = "black", size = .1) +
+      facet_grid(marker~.)+
+      labs(x = "Recombinant inbred line", y = paste0("Arsenic sensititivity")) 
+    
+    if(color_by_genotype == TRUE){
+      plots[[qtl]] <- plots[[qtl]] + scale_fill_manual(values= strain_colors,
+                        name = expression(paste("Genotype at QTL")))
+    } else {
+      plots[[qtl]] <- plots[[qtl]] + scale_fill_manual(values= c("#999999","#999999"),
+                        name = expression(paste("Genotype at QTL")))
+    }
+  }
+  return(plots)
+}
 
