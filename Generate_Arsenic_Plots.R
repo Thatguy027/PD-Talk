@@ -150,7 +150,7 @@ pxgplot_edit(arsenic_cross, dplyr::filter(arsenic_linkage, trait == ".mean.TOF")
         panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color)) +
   labs(title = "")
- 
+
 ggsave(filename = "Plots/Arsenic_TOF_Linkage_PxG.png", height = 6, width = 12, dpi = 400)
 
 riail_bar_pheno <- rial_bar_plot(arsenic_cross,
@@ -353,13 +353,14 @@ snpeff_fine$VARIANT_IMPACT[is.na(snpeff_fine$VARIANT_IMPACT)] <- "INTERGENIC"
 
 LD_genotypes <- snpeff_fine %>%
   dplyr::filter(STRAIN == "CB4856") %>%
-  dplyr::mutate(cb_alt = ifelse(REF == TGT, "CB4856 REF", "CB4856 ALT")) %>%
+  dplyr::mutate(cb_alt = ifelse(REF == TGT, "N2", "CB4856")) %>%
   dplyr::mutate(tidy_marker = gsub("_",":",MARKER))
 
 peak_roi_marker <- LD_genotypes %>%
   dplyr::filter(tidy_marker == PEAK_MARKER)
 
 LD_genotypes%>%
+  # dplyr::filter(cb_alt == "CB4856") %>%
   na.omit() %>%
   ggplot() +
   aes(x = POS/1e6) +
@@ -371,9 +372,35 @@ LD_genotypes%>%
   geom_point(aes(fill = factor(VARIANT_IMPACT,
                                levels = rev(c("INTERGENIC", "MODIFIER", "LOW", "MODERATE", "HIGH"))), 
                  y = VARIANT_LOG10p), 
-             size = point_size,
+             size = 4,
              shape = 21)+
-  facet_grid(.~cb_alt) + 
+  scale_fill_viridis_d(name = "Variant\nImpact", direction = -1) +
+  theme_bw(15)+
+  base_theme + 
+  labs(x = "Genomic Position (Mb)",
+       y = expression(-log[10](italic(p))))+
+  theme(panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color))+
+  xlim(c(7.775,8.175))
+
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.png", height = 6, width = 16, dpi = 400)
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.pdf", height = 6, width = 16, dpi = 400)
+
+LD_genotypes%>%
+  dplyr::filter(cb_alt == "CB4856") %>%
+  na.omit() %>%
+  ggplot() +
+  aes(x = POS/1e6) +
+  geom_vline(aes(xintercept = 7931252/1e6), 
+             color = "red",
+             linetype = 2) +
+  geom_vline(aes(xintercept = 7.83), color = "gray60")+
+  geom_vline(aes(xintercept = 8.02), color = "gray60")+
+  geom_point(aes(fill = factor(VARIANT_IMPACT,
+                               levels = rev(c("INTERGENIC", "MODIFIER", "LOW", "MODERATE", "HIGH"))), 
+                 y = VARIANT_LOG10p), 
+             size = 4,
+             shape = 21)+
   scale_fill_viridis_d(name = "Variant\nImpact", direction = -1) +
   theme_bw(15)+
   base_theme + 
@@ -385,6 +412,57 @@ LD_genotypes%>%
 ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.png", height = 6, width = 16, dpi = 400)
 ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap.pdf", height = 6, width = 16, dpi = 400)
 
+
+LD_genotypes%>%
+  na.omit() %>%
+  ggplot() +
+  aes(x = POS/1e6) +
+  geom_vline(aes(xintercept = 7931252/1e6), 
+             color = "red",
+             linetype = 2) +
+  geom_vline(aes(xintercept = 7.83), color = "gray60")+
+  geom_vline(aes(xintercept = 8.02), color = "gray60")+
+  geom_point(aes(fill = cb_alt, 
+                 y = VARIANT_LOG10p), 
+             size = point_size,
+             shape = 21)+
+  scale_fill_manual(values = strain_colors, name = "CB4856 Allele Status", breaks = c("ALT", "REF")) +
+  base_theme + 
+  labs(x = "Genomic Position (Mb)",
+       y = expression(-log[10](italic(p))))+
+  theme(panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color))+
+  xlim(c(7.75,8.175))
+
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap_N2_CB_COLORS.png", height = 6, width = 12, dpi = 400)
+
+
+LD_genotypes%>%
+  dplyr::filter(cb_alt == "CB4856") %>%
+  na.omit() %>%
+  ggplot() +
+  aes(x = POS/1e6) +
+  geom_vline(aes(xintercept = 7931252/1e6), 
+             color = "red",
+             linetype = 2) +
+  geom_vline(aes(xintercept = 7.83), color = "gray60")+
+  geom_vline(aes(xintercept = 8.02), color = "gray60")+
+  geom_point(aes(fill = cb_alt, 
+                 y = VARIANT_LOG10p,
+                 alpha = factor(VARIANT_IMPACT,
+                                levels = rev(c("INTERGENIC", "MODIFIER", "LOW", "MODERATE", "HIGH")))), 
+             size = point_size,
+             shape = 21)+
+  scale_fill_manual(values = strain_colors, name = "CB4856 Allele Status", breaks = c("ALT", "REF")) +
+  scale_alpha_manual(values = c(1,1,0.25,0.25,0.25), name = "Variant Effect") +
+  base_theme + 
+  labs(x = "Genomic Position (Mb)",
+       y = expression(-log[10](italic(p))))+
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color))+
+  xlim(c(7.75,8.175))
+ggsave(filename = "Plots/Arsenic_TOF_GWA_FineMap_N2_CB_COLORS_ALPHA.png", height = 6, width = 12, dpi = 400)
 ######################################################################################################################## SWAP
 
 
@@ -501,6 +579,20 @@ complete_arsenic %>%
 ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.png", height = 10, width = 10, dpi = 400)
 ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.pdf", height = 10, width = 10, dpi = 400)
 
+complete_arsenic %>%
+  ggplot()+
+  aes(x = tidy_strain)+
+  geom_point(aes(y = delta_control, fill = tidy_strain), 
+             color = "black", shape = 21, size = 4)+
+  facet_wrap(expt~FA, scales = "free", nrow = 1)+
+  scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
+  theme_bw(16)+
+  base_theme +  theme(legend.position = "none",
+                      panel.grid.major = element_blank(),
+                      axis.line = element_line(colour = axis_color),
+                      axis.title.x = element_blank()) +
+  labs(y = "Arsenic - Control")
+ggsave(filename = "Plots/Arsenic_ISOratio_Arsenic_POINTS.pdf", height = 6, width = 20, dpi = 400)
 ######################################################################################################################## Metabolites straight in arsenic
 controls_new <- L1_fa %>% 
   tidyr::gather(FA,value,-Strain,-Condition,-Replicate) %>%
@@ -709,41 +801,35 @@ ggsave(filename = "Plots/Arsenic_TOF_Rescue.pdf", height = 8, width = 14, dpi = 
 human_reads <- readr::read_csv(glue::glue("{arsenic_data}Figure 5-source data 1.csv"))
 
 pr_reads <- human_reads %>%
-  dplyr::filter(Arsenic_Concentration %in% c("0uM","5uM")) %>%
+  dplyr::filter(Arsenic_Concentration %in% c("0uM","5uM"), Edit == "S112C") %>%
   na.omit() %>%
   dplyr::mutate(perc_edit = Guide1_edit/Guide1_total) %>%
-  dplyr::select(Edit, Replicate, Arsenic_Concentration, perc_edit) 
+  dplyr::select(Edit, Replicate, Arsenic_Concentration, perc_edit) %>%
+  dplyr::group_by(Arsenic_Concentration) %>%
+  dplyr::mutate(mean_edit = mean(perc_edit))
 
-cntrl <- pr_reads %>%
-  dplyr::filter(Arsenic_Concentration == "0uM") %>%
-  dplyr::rename(control_edit = perc_edit) %>%
-  dplyr::select(-Arsenic_Concentration) %>%
-  dplyr::group_by(Edit, Replicate) %>%
-  dplyr::mutate(control_means = mean(control_edit))
 
-arsenic_5 <- pr_reads %>%
-  dplyr::filter(Arsenic_Concentration == "5uM") %>%
-  dplyr::rename(arsenic_edit = perc_edit) %>%
-  dplyr::left_join(., cntrl, by = c("Edit", "Replicate")) %>%
-  dplyr::mutate(delta_cntrl = (arsenic_edit - control_means)*100) %>%
-  dplyr::distinct(Edit, delta_cntrl, .keep_all=T) %>%
-  dplyr::group_by(Edit) %>%
-  dplyr::summarise(mean_delta = mean(delta_cntrl),
-                   sd_delta = sd(delta_cntrl))
-
-ggplot(arsenic_5)+
-  aes(x = factor(Edit, levels = c("W84C","S112C","R113C")), y = mean_delta, fill = factor(Edit, levels = c("W84C","S112C","R113C")))+
-  geom_bar(stat="identity", color = "black", size = 1) +
-  geom_errorbar(aes(ymin=mean_delta, ymax=mean_delta+sd_delta), width=.2, size =1) +
-  scale_fill_manual(values = c("hotpink3", "cadetblue3","black")) +
-  labs(y = "Percent Edit Enrichment in Arsenic") +
-  base_theme +
+ggplot(pr_reads)+
+  aes(x = factor(Arsenic_Concentration), y = perc_edit, 
+      color = factor(Edit,
+                     levels = c("W84C","S112C","R113C")), 
+      fill = factor(Edit,
+                    levels = c("W84C","S112C","R113C")))+
+  geom_point(size =3, shape = 22, aes(x = factor(Arsenic_Concentration), y = mean_edit), color = "black",fill = "black")+
+  geom_point(size =3, shape = 21, aes(x = factor(Arsenic_Concentration), y = perc_edit), color = "black",fill = "gray60")+
+  geom_line( aes(x = factor(Arsenic_Concentration), y = mean_edit, group = Edit))+
+  scale_color_manual(values = c("gray60"), name = "Edit:")+
+  scale_fill_manual(values = c("gray60"), name = "Edit:")+
+  labs(x = "Arsenic Concentration (µM)", y = "Fraction Edited")+
+  theme_classic(18)+
+  base_theme+
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         axis.line = element_line(colour = axis_color),
-        axis.title.x = element_blank()) 
+        axis.title.x = element_blank()) +
+  scale_x_discrete(expand=c(.1,0)) 
 
-ggsave(glue::glue("Plots/Arsenic_Human_Cell_Barplot.pdf"), 
+ggsave(glue::glue("Plots/Arsenic_Human_Cell.pdf"), 
        height = 6, 
        width = 8)
 
