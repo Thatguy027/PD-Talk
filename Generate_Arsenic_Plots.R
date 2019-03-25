@@ -16,6 +16,40 @@ source("Scripts/PD_Talk_Functions.R")
 # INTRO 
 ########################################################################################################################
 
+######################################################################################################################## Phenotypic distribution logo
+
+pheno <- data.table::fread(glue::glue("{arsenic_data}Figure 1-source data 8.tsv")) %>%
+  dplyr::filter(Trait == "mean.TOF") %>%
+  na.omit() %>%
+  dplyr::select(strain = Strain, value = Value) %>%
+  dplyr::distinct()
+
+pheno%>%
+  na.omit() %>%
+  dplyr::arrange(value)%>%
+  dplyr::mutate(strain2 = factor(strain, levels = unique(strain), labels = unique(strain), ordered = T))%>%
+  dplyr::mutate(norm_pheno_temp = ifelse(value == min(value), 0, 1))%>%
+  dplyr::mutate(delta_pheno = ifelse(norm_pheno_temp == 0, 0, abs(dplyr::lag(value) - value)))%>%
+  dplyr::mutate(norm_pheno = cumsum(delta_pheno)) %>%
+  dplyr::mutate(final_pheno = norm_pheno/max(norm_pheno)) %>% 
+  ggplot()+
+  aes(x = final_pheno,stat(count))+
+  geom_density(fill = "#C6C6C6") +
+  base_theme +
+  labs(y = "Trait")+
+  scale_x_continuous(breaks = c(0.1,0.9), 
+                     labels = c("Sensitive", "Resistant"),limits = c(0,1))+
+  theme(legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.x = element_text(size = 24),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+ggsave(filename = "Plots/Distribution.pdf", height = 6, width = 10, dpi = 400)
+
 ######################################################################################################################## RIAIL GENOTYPES
 
 df <- readr::read_tsv("Data/gt_hmm_fill.tsv") %>%
@@ -60,8 +94,12 @@ dr_plt_df%>%
   aes(x = tidy_cond, 
       y = flip_pc, 
       fill = Strain)+
-  geom_boxplot(outlier.colour = NA)+
-  scale_fill_manual(values = c("gray50", highlight_color), name = "Strain")+
+  geom_beeswarm(alpha = point_alpha,
+                priority = "density",
+                cex = 1.2,dodge.width=.8)+
+  geom_boxplot(outlier.colour = NA, alpha = boxplot_alpha)+
+  scale_fill_manual(values = strain_colors, name = "Strain")+
+  scale_color_manual(values = strain_colors, name = "Strain")+
   theme_bw()+
   labs(x = "Arsenic (µM)", y = "Animal Length") + 
   base_theme +
