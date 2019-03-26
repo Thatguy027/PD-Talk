@@ -151,3 +151,59 @@ td_df %>%
         axis.line = element_line(colour = axis_color),
         axis.title.y = element_blank()) +
   labs(x = "Genomic Position (Mb)")
+
+
+
+# 249 strains
+
+load("Data/BEN1_249_III_3000000-4000000_Diversity_Statistics.Rda")
+
+ben1_start <- 3537688
+ben1_end <- 3541628
+
+td_df <- neutrality_df %>%
+  dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
+  dplyr::group_by(statistic) %>%
+  dplyr::mutate(scaled_value = scale(value))
+
+td_df %>%
+  ggplot()+
+  aes(x = WindowPosition/1e6, y = value, color = statistic)+
+  geom_point(size = point_size, alpha = point_alpha)+
+  scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
+  facet_grid(statistic~., scales = "free")+
+  base_theme +
+  geom_vline(aes(xintercept = ben1_start/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = ben1_end/1e6), color = "#E68FAC")+
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
+        axis.line = element_line(colour = axis_color),
+        axis.title.y = element_blank()) +
+  labs(x = "Genomic Position (Mb)") 
+
+# 249 strains - zoom
+
+load("Data/BEN1_249_III_3000000-4000000_Diversity_Statistics.Rda")
+
+ben1_start <- 3537688
+ben1_end <- 3541628
+
+td_df <- neutrality_df %>%
+  dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
+  dplyr::group_by(statistic) %>%
+  dplyr::mutate(scaled_value = scale(value))
+
+td_df %>%
+  ggplot()+
+  aes(x = WindowPosition/1e6, y = value, color = statistic)+
+  geom_point(size = point_size, alpha = point_alpha)+
+  scale_color_manual(values = c("#BE0032","#0067A5","#222222"))+
+  facet_grid(statistic~., scales = "free")+
+  base_theme +
+  geom_vline(aes(xintercept = ben1_start/1e6), color = "#E68FAC")+
+  geom_vline(aes(xintercept = ben1_end/1e6), color = "#E68FAC")+
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
+        axis.line = element_line(colour = axis_color),
+        axis.title.y = element_blank()) +
+  labs(x = "Genomic Position (Mb)") +xlim(c(3.427688, 3.651628))

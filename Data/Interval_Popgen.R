@@ -12,10 +12,11 @@ require(tidyverse)
 # 4 - VCF file
 # 5 - GFF file
 # 6 - Save Label
+# & - Strain file
 # test args
-# args <- c("II","7598325","8210489","Ce330_annotated.vcf.gz","WS245_exons.gff", "Arsenic")
+# args <- c("II","7598325","8210489","Ce330_annotated.vcf.gz","WS245_exons.gff", "Arsenic", "249_samples.txt")
 # Running script
-# Rscript --vanilla Interval_Popgen.R II 10050022 12062611 Ce330_annotated.vcf.gz WS245_exons.gff Etoposide
+# Rscript --vanilla Interval_Popgen.R II 10050022 12062611 Ce330_annotated.vcf.gz WS245_exons.gff Etoposide 249_samples.txt
 args <- commandArgs(TRUE)
 
 system(glue::glue("echo Initializing PopGenome Parameters"))
@@ -44,7 +45,7 @@ OUTGROUP <- "XZ1516"
 
 system(glue::glue("echo Done Initializing PopGenome Parameters - WindowSize = {WINDOW_SIZE}, StepSize = {SLIDE_DISTANCE}, Whole Population, Chromosome = {ANALYSIS_CHROM}"))
 
-system(glue::glue("bcftools view -r {ANALYSIS_CHROM}:{args[2]}-{args[3]} -v snps {args[4]} | sed 's/0\\/0/0|0/g' | sed 's/1\\/1/1|1/g' | sed 's/0\\/1/1|1/g' | sed 's/1\\/0/1|1/g' | sed 's/.\\/./.|./g' | bcftools view -Oz -o tempRegion.vcf.gz"))
+system(glue::glue("bcftools view -S {args[7]} -r {ANALYSIS_CHROM}:{args[2]}-{args[3]} -v snps {args[4]} | sed 's/0\\/0/0|0/g' | sed 's/1\\/1/1|1/g' | sed 's/0\\/1/1|1/g' | sed 's/1\\/0/1|1/g' | sed 's/.\\/./.|./g' | bcftools view -Oz -o tempRegion.vcf.gz"))
 system(glue::glue("tabix tempRegion.vcf.gz"))
 system(glue::glue("bcftools query -l tempRegion.vcf.gz > samples.txt"))
 
