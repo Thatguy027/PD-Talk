@@ -103,6 +103,27 @@ ggsave("Plots/ABZ_q90TOF_SKAT.png",
        height = 4, 
        width = 12)
 
+
+######################################################################################################################## Ben-1 regressed
+
+
+
+
+pr_maps <- data.table::fread(glue::glue("{albendazole_data}Final_Tables/TS17_GWA_marker_mappings_ben1_regressed.tsv"))
+
+independent_tests <- 8000
+
+cegwas2_manplot(plot_df = pr_maps, eigen_cutoff = -log10(0.05/independent_tests), mapped_cutoff = "BF")[[1]] +
+  base_theme +
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.border = element_rect(fill = NA),
+        plot.title = element_blank()) +
+  ggplot2::labs(x = "Genomic Position (Mb)",
+                y = expression(-log[10](italic(p))))
+
+ggsave(filename = "Plots/ABZ_q90TOF_ben1v_Removed_GWA.png", height = 4, width = 12, dpi = 400)
+
 ######################################################################################################################## Ben-1 removed
 
 
@@ -207,3 +228,21 @@ td_df %>%
         axis.line = element_line(colour = axis_color),
         axis.title.y = element_blank()) +
   labs(x = "Genomic Position (Mb)") +xlim(c(3.427688, 3.651628))
+
+# random
+isolation_info <- readr::read_tsv("https://elegansvariation.org/strain/strain_data.tsv")
+
+strains_249 <- isolation_info%>%
+  dplyr::filter(release %in% c("20160408", "20170531"), reference_strain == "True")%>%
+  dplyr::select(strain = isotype, long = longitude, lat = latitude) %>%
+  dplyr::pull(strain)
+
+
+ben1 <- cegwas2::query_vcf("ben-1", vcf = "Data/Ce330_annotated.vcf.gz", impact = "ALL") %>%
+  dplyr::filter(nchar(REF) == nchar(ALT)) 
+
+ben1_syn <- dplyr::filter(ben1, effect == "synonymous_variant") %>%
+  dplyr::distinct(CHROM,POS, .keep_all = T)
+
+ben1_nonsyn <- dplyr::filter(ben1, effect %in% c("missense_variant","stop_gained","splice_donor_variant&intron_variant")) %>%
+  dplyr::distinct(CHROM,POS, .keep_all = T)

@@ -620,7 +620,7 @@ ggsave(filename = "Plots/Arsenic_PC1_ISOratio_Arsenic.pdf", height = 10, width =
 complete_arsenic %>%
   ggplot()+
   aes(x = tidy_strain)+
-  geom_point(aes(y = delta_control, fill = tidy_strain), 
+  geom_point(aes(y = delta_control, fill = tidy_strain),
              color = "black", shape = 21, size = 4)+
   facet_wrap(expt~FA, scales = "free", nrow = 1)+
   scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
@@ -768,6 +768,24 @@ complete_arsenic %>%
 
 ggsave(filename = "Plots/Arsenic_PC1_ISO_Control.png", height = 10, width = 10, dpi = 400)
 ggsave(filename = "Plots/Arsenic_PC1_ISO_Control.pdf", height = 10, width = 10, dpi = 400)
+
+
+complete_arsenic %>%
+  ggplot()+
+  aes(x = tidy_strain)+
+  geom_point(aes(y = control_value, fill = tidy_strain),
+             color = "black", shape = 21, size = 4)+
+  # geom_boxplot(aes(y = control_value, fill = tidy_strain))+
+  facet_wrap(expt~FA, scales = "free", nrow = 1)+
+  scale_fill_manual(values=c("#F9A227","gray50","#2790F9","gray50"))+
+  theme_bw(16)+
+  base_theme +  theme(legend.position = "none",
+                      panel.grid.major = element_blank(),
+                      axis.line = element_line(colour = axis_color),
+                      axis.title.x = element_blank()) +
+  labs(y = "Control")
+
+ggsave(filename = "Plots/Arsenic_ISOratio_Control_POINTS.pdf", height = 6, width = 20, dpi = 400)
 
 ######################################################################################################################## RESCUE
 arsenic_rescue <- data.table::fread(glue::glue("{arsenic_data}Figure 4-source data 5.tsv"))
@@ -952,6 +970,155 @@ td_df %>%
   labs(x = "Genomic Position (Mb)")+
   xlim(c((dbt_start-50000)/1e6, (dbt_end+50000)/1e6))
 
+######################################################################################################################## PopGenome compare interval to genome-wide
+
+load("Data/Ce_Genome-wide_Neutrality_stats.Rda")
+
+td_df_genome <- neutrality_df %>%
+  dplyr::filter(statistic %in% c("Fay.Wu.H","Zeng.E","Tajima.D")) %>%
+  dplyr::group_by(statistic) %>%
+  dplyr::mutate(scaled_value = scale(value))
+
+ggplot()+
+  aes(x = value) +
+  stat_density(data = td_df_genome)+
+  stat_density(data = td_df, fill = highlight_color, alpha = 0.75)+
+  facet_grid(statistic~.)+
+  base_theme +
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())
 
 
+ggplot()+
+  aes(x = value, y = ..scaled..) +
+  stat_density(data = td_df_genome %>% dplyr::filter(CHROM == "II"))+
+  stat_density(data = td_df, fill = highlight_color, alpha = 0.75)+
+  stat_density(data = td_df %>% 
+                 dplyr::filter(WindowPosition < dbt_end ) %>%
+                 dplyr::filter(WindowPosition > dbt_start), 
+               fill = "cyan", alpha = 0.75) + 
+  facet_grid(.~statistic, scales = "free")+
+  base_theme +
+  theme(panel.grid.major = element_blank(),
+        legend.position = "none",
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())
+
+BSDA::z.test(x = td_df_genome %>% dplyr::filter(CHROM == "II") %>% dplyr::pull(value) %>% na.omit(),
+       y = td_df$value, alternative = "two.sided", mu = 0, 
+       sigma.x =td_df_genome %>% dplyr::filter(CHROM == "II") %>% dplyr::pull(value) %>% na.omit() %>% sd(),
+       sigma.y = td_df$value %>% sd(), conf.level = 0.95)
+
+BSDA::z.test(x = td_df_genome %>% dplyr::pull(value) %>% na.omit(),
+             y = td_df %>% 
+               dplyr::filter(WindowPosition < dbt_end ) %>%
+               dplyr::filter(WindowPosition > dbt_start) %>% dplyr::pull(value) %>% na.omit(),
+             alternative = "two.sided", mu = 0, 
+             sigma.x = 0.5,
+             sigma.y = 0.5, conf.level = 0.95)
+
+BSDA::z.test(x = td_df_genome %>% dplyr::pull(value) %>% na.omit(),
+             y = td_df %>% 
+               dplyr::filter(WindowPosition < dbt_end ) %>%
+               dplyr::filter(WindowPosition > dbt_start) %>% dplyr::pull(value) %>% na.omit(),
+             alternative = "two.sided", 
+             mu = 0, 
+             sigma.x = td_df_genome %>% dplyr::pull(value) %>%
+               na.omit() %>% sd(),
+             sigma.y = td_df %>% 
+               dplyr::filter(WindowPosition < dbt_end ) %>%
+               dplyr::filter(WindowPosition > dbt_start) %>% dplyr::pull(value) %>% na.omit() %>% sd()
+             , conf.level = 0.95)
+
+qtl_start <- 7598325
+qtl_end <- 8210489
+dbt_start <- 7942463
+dbt_end <- 7945206
+
+# dbt gene vs 2
+# "Tajima.D" "Fay.Wu.H" "Zeng.E" 
+stt <-"Fay.Wu.H"
+x <- td_df_genome %>% 
+  dplyr::filter(CHROM == "II", statistic == stt) %>%
+  dplyr::pull(value)  %>%
+  na.omit()
+y <- td_df %>% 
+  dplyr::filter(statistic == stt, WindowPosition < dbt_end ) %>%
+  dplyr::filter(WindowPosition > dbt_start) %>% dplyr::pull(value) %>% na.omit()
+
+wilcox.test(x, y, alternative = "two.sided")
+
+# qtl vs 2
+y <- td_df %>% 
+  dplyr::filter(statistic == stt, WindowPosition < qtl_end ) %>%
+  dplyr::filter(WindowPosition > qtl_start) %>% dplyr::pull(value) %>% na.omit()
+
+wilcox.test(x, y, alternative = "two.sided")
+
+# qtl vs dbt
+x <- td_df %>% 
+  dplyr::filter(statistic == stt, WindowPosition < dbt_end ) %>%
+  dplyr::filter(WindowPosition > dbt_start) %>% dplyr::pull(value) %>% na.omit()
+
+wilcox.test(x, y, alternative = "two.sided")
+######################################################################################################################## SUBSTRATE PLOTS
+
+strains_330 %>%
+  dplyr::group_by(substrate,TGT)%>%
+  dplyr::mutate(gt_ct = n())%>%
+  dplyr::filter(substrate !="None")%>%
+  dplyr::group_by(substrate) %>%
+  dplyr::mutate(substrate_ct = n()) %>%
+  dplyr::distinct(substrate, TGT, .keep_all =T) %>%
+  dplyr::mutate(perc_gt = gt_ct/substrate_ct*100) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(desc(TGT),desc(perc_gt)) %>%
+  dplyr::mutate(fac_sub = factor(substrate, levels = substrate, labels = substrate)) %>%
+  ggplot() +
+  aes(y = perc_gt, x = fac_sub, fill = TGT)+ 
+  geom_bar(stat="identity") +
+  geom_text(aes(label=gt_ct, color = TGT), 
+            position=position_stack(), 
+            size = 12, family = "Itim", hjust = 1) +
+  scale_fill_manual(values = strain_colors) +
+  scale_color_manual(values = c(background_color, axis_color)) +
+  coord_flip()+
+  base_theme+
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())+
+  scale_y_continuous(limits = c(0,101), expand = c(0, 0))+
+  labs(x = "Substrate")
+
+strains_330 %>%
+  dplyr::group_by(long, lat) %>%
+  dplyr::mutate(same_loc = n()) %>%
+  dplyr::group_by(substrate,TGT, same_loc)%>%
+  dplyr::mutate(gt_ct = n())%>%
+  dplyr::filter(substrate !="None")%>%
+  dplyr::group_by(substrate) %>%
+  dplyr::mutate(substrate_ct = n()) %>%
+  dplyr::distinct(substrate, TGT, .keep_all =T) %>%
+  dplyr::mutate(perc_gt = gt_ct/substrate_ct*100) %>%
+  dplyr::ungroup() %>%
+  dplyr::arrange(desc(TGT),desc(perc_gt)) %>%
+  dplyr::mutate(fac_sub = factor(substrate, levels = substrate, labels = substrate)) %>%
+  dplyr::mutate(sameL = ifelse(same_loc > 1, "Same Location", "Different Location")) %>%
+  ggplot() +
+  aes(y = perc_gt, x = fac_sub, fill = TGT)+ 
+  geom_bar(stat="identity") +
+  geom_text(aes(label=gt_ct),position=position_stack(), size = 12, family = "Itim", hjust = 1) +
+  scale_fill_manual(values = strain_colors) +
+  facet_grid(.~sameL) +
+  coord_flip()+
+  base_theme+
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        axis.line = element_line(colour = axis_color),
+        axis.title.x = element_blank())+
+  scale_y_continuous(limits = c(0,101), expand = c(0, 0))+
+  labs(x = "Substrate")
 
